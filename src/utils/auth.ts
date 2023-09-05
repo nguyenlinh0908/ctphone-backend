@@ -1,5 +1,6 @@
 import appEnv from '@configs/env.config';
 import * as bcrypt from 'bcrypt';
+import fs from "fs"
 
 export const hashString = (
   string: string,
