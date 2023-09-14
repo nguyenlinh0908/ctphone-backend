@@ -1,10 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Gender, Role } from 'src/modules/shared/enum';
+import { Gender } from 'src/shared/enum';
 
-export type UserDocument = User & Document;
+export type CustomerDocument = Customer & Document;
 
 @Schema()
-export class User {
+export class Customer {
   @Prop({ type: String, required: true })
   fullName: string;
 
@@ -15,10 +15,13 @@ export class User {
   gender: Gender;
 
   @Prop({ type: String, required: true })
-  phoneNumber: string;
+  phone: string;
+
+  @Prop({ type: String, required: true })
+  address: string;
 
   @Prop({ type: String, required: false })
   email?: string;
 }
 
-export const UserSchema = SchemaFactory.createForClass(User);
+export const CustomerSchema = SchemaFactory.createForClass(Customer);

@@ -1,26 +1,34 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Account, AccountDocument } from './model';
+import { Account, AccountDocument, Role, RoleDocument } from './model';
 import { Model } from 'mongoose';
 import { CreateAccountDto, LoginDto } from './dto';
 import { JwtService } from '@nestjs/jwt';
 import { IJWT, IJwtPayload } from './interface';
 import { JwtType } from './enum';
 import appEnv from '@configs/env.config';
-import { Role } from '../shared/enum';
 import * as ms from 'ms';
 import * as dayjs from 'dayjs';
+import { CustomerService } from '../customer/customer.service';
+import { StaffService } from '../staff/staff.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(Account.name) private accountModel: Model<AccountDocument>,
+    @InjectModel(Role.name) private roleModel: Model<RoleDocument>,
     private jwtService: JwtService,
+    private customerService:CustomerService,
+    private staffService:StaffService
   ) {}
 
   async registerStaffAccount(accountData: CreateAccountDto): Promise<Account> {
     const accountCreated = await this.accountModel.create(accountData);
     return accountCreated;
+  }
+
+  async registerCustomerAccount(){
+    return this.accountModel.create()
   }
 
   async login(loginData: LoginDto): Promise<IJWT> {
@@ -31,7 +39,6 @@ export class AuthService {
     const payload: IJwtPayload = {
       _id: user._id,
       username: user.username,
-      role: Role.ADMIN,
     };
 
     const accessToken = this.signJwt(payload, JwtType.ACCESS_TOKEN);
@@ -70,5 +77,9 @@ export class AuthService {
       privateKey: appEnv().jwt.AUTH_JWT_SECRET,
       expiresIn,
     });
+  }
+
+  getAllRoles(): Promise<Role[]> {
+    return this.roleModel.find();
   }
 }

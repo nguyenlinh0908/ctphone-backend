@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { SchemaTypes, Types } from 'mongoose';
-import { Role } from 'src/modules/shared/enum';
-import { User } from 'src/modules/user/model';
+import { Types } from 'mongoose';
+import { Customer } from 'src/modules/customer/model';
 
 export type AccountDocument = Account & Document;
 
@@ -13,11 +12,11 @@ export class Account {
   @Prop({ type: String })
   password: string;
 
-  @Prop({ type: String })
-  role: Role;
+  @Prop({ type: Types.ObjectId, required: false })
+  customerId?: Types.ObjectId;
 
-  @Prop({ type: SchemaTypes.ObjectId, ref: User.name })
-  ownerId: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, required: false })
+  staffId?: Types.ObjectId;
 }
 
 export const AccountSchema = SchemaFactory.createForClass(Account);

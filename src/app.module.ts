@@ -5,9 +5,10 @@ import { ConfigModule } from '@nestjs/config';
 import { default as appEnv, default as config } from '@configs/env.config';
 import { dbModule } from '@configs/database.config';
 import { AuthModule } from './modules/auth/auth.module';
-import { UserModule } from './modules/user/user.module';
 import { I18nModule, QueryResolver } from 'nestjs-i18n';
 import { join } from 'path';
+import { CustomerModule } from './modules/customer/customer.module';
+import { StaffModule } from './modules/staff/staff.module';
 
 @Module({
   imports: [
@@ -28,7 +29,8 @@ import { join } from 'path';
     }),
     /**Modules */
     AuthModule,
-    UserModule,
+    CustomerModule,
+    StaffModule
   ],
   controllers: [AppController],
   providers: [AppService],

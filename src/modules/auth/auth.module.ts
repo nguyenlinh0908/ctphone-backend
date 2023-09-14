@@ -1,17 +1,30 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { UserModule } from '@modules/user/user.module';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Account, AccountSchema } from './model';
+import {
+  Account,
+  AccountRole,
+  AccountRoleSchema,
+  AccountSchema,
+  Role,
+  RoleSchema,
+} from './model';
 import { LoginValidatePipe } from './pipe';
 import { JwtModule } from '@nestjs/jwt';
+import { CustomerModule } from '../customer/customer.module';
+import { StaffModule } from '../staff/staff.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Account.name, schema: AccountSchema }]),
+    MongooseModule.forFeature([
+      { name: Account.name, schema: AccountSchema },
+      { name: Role.name, schema: RoleSchema },
+      { name: AccountRole.name, schema: AccountRoleSchema },
+    ]),
     JwtModule,
-    UserModule,
+    CustomerModule,
+    StaffModule
   ],
   controllers: [AuthController],
   providers: [AuthService, LoginValidatePipe],

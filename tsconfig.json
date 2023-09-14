@@ -21,7 +21,8 @@
       "*":["*"],
       "@configs/*":["src/configs/*"],
       "@shared/*":["src/shared/*"],
-      "@modules/*":["src/modules/*"]
+      "@modules/*":["src/modules/*"],
+      "@utils/*":["src/utils"]
     }
   }
 }
