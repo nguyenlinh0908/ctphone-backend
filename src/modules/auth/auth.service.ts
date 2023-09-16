@@ -23,6 +23,7 @@ import * as ms from 'ms';
 import * as dayjs from 'dayjs';
 import { CustomerService } from '../customer/customer.service';
 import { StaffService } from '../staff/staff.service';
+import * as _ from 'lodash';
 
 @Injectable()
 export class AuthService {
@@ -46,13 +47,19 @@ export class AuthService {
   }
 
   async login(loginData: LoginDto): Promise<IJWT> {
-    const user = await this.accountModel.findOne({
+    const account = await this.accountModel.findOne({
       username: loginData.username,
     });
 
+    const userRoles = await this.findAccountRolesByAccountId(
+      account._id.toString(),
+    );
+    const userRoleIds = _.map(userRoles, (item) => item._id);
+
     const payload: IJwtPayload = {
-      _id: user._id,
-      username: user.username,
+      _id: account._id,
+      username: account.username,
+      role: userRoleIds,
     };
 
     const accessToken = this.signJwt(payload, JwtType.ACCESS_TOKEN);
@@ -99,6 +106,10 @@ export class AuthService {
 
   createRole(data: CreateRoleDto) {
     return this.roleModel.create(data);
+  }
+
+  findAccountRolesByAccountId(accountId: string) {
+    return this.accountRoleModel.find({ accountId });
   }
 
   findRoleById(id: string) {

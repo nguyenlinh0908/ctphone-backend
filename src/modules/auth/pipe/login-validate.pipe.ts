@@ -15,7 +15,6 @@ export class LoginValidatePipe implements PipeTransform {
   constructor(private readonly authService: AuthService, private i18nService: I18nService) {}
 
   async transform(loginData: LoginDto, metadata: ArgumentMetadata) {
-    console.log('loginData :>> ', loginData);
     const accountExisted = await this.authService.findByUsername(
       loginData.username,
     );

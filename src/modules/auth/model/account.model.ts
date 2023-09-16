@@ -6,6 +6,8 @@ export type AccountDocument = Account & Document;
 
 @Schema()
 export class Account {
+  _id: Types.ObjectId;
+
   @Prop({ type: String, unique: true })
   username: string;
 

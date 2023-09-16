@@ -33,6 +33,7 @@
     "dotenv": "^16.3.1",
     "joi": "^17.9.2",
     "jsonwebtoken": "^9.0.2",
+    "lodash": "^4.17.21",
     "mongoose": "^7.4.3",
     "nestjs-i18n": "^10.3.1",
     "reflect-metadata": "^0.1.13",

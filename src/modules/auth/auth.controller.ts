@@ -15,7 +15,7 @@ export class AuthController {
     try {
       const account = await this.authService.registerAccount(data);
       this.authService.createAccountRole({
-        accountId: data.staffId,
+        accountId: account._id.toString(),
         roleId: data.roleId,
       });
       return account;

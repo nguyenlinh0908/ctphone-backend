@@ -1,1 +1,1 @@
-export * from "./jwt-type.enum"
+export * from './jwt-type.enum';
