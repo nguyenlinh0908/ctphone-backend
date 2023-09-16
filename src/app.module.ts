@@ -30,7 +30,7 @@ import { StaffModule } from './modules/staff/staff.module';
     /**Modules */
     AuthModule,
     CustomerModule,
-    StaffModule
+    StaffModule,
   ],
   controllers: [AppController],
   providers: [AppService],

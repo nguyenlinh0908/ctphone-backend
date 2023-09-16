@@ -54,7 +54,7 @@ export class AuthService {
     const userRoles = await this.findAccountRolesByAccountId(
       account._id.toString(),
     );
-    const userRoleIds = _.map(userRoles, (item) => item._id);
+    const userRoleIds = _.map(userRoles, (item) => item.roleId);
 
     const payload: IJwtPayload = {
       _id: account._id,
@@ -88,6 +88,14 @@ export class AuthService {
     return await this.accountModel.findOne({ username });
   }
 
+  findByStaffId(staffId: string) {
+    return this.accountModel.find({ staffId });
+  }
+
+  findByCustomerId(customerId: string) {
+    return this.accountModel.find({ customerId });
+  }
+
   signJwt(payload: IJwtPayload, jwtType: JwtType) {
     const expiresIn =
       jwtType == JwtType.ACCESS_TOKEN
@@ -97,6 +105,12 @@ export class AuthService {
     return this.jwtService.sign(payload, {
       privateKey: appEnv().jwt.AUTH_JWT_SECRET,
       expiresIn,
+    });
+  }
+
+  verifyJwt(token: string) {
+    return this.jwtService.verify<IJwtPayload>(token, {
+      secret: appEnv().jwt.AUTH_JWT_SECRET,
     });
   }
 
@@ -114,6 +128,10 @@ export class AuthService {
 
   findRoleById(id: string) {
     return this.roleModel.findById(id);
+  }
+
+  findRoleByIds(ids: string[]) {
+    return this.roleModel.find({ _id: { $in: ids } });
   }
 
   createAccountRole(data: CreateAccountRole) {

@@ -36,6 +36,9 @@ export class RegisterAccountValidatePipe implements PipeTransform {
           this.i18nService.t('staff.ERROR.STAFF_NOT_EXIST'),
           HttpStatus.BAD_REQUEST,
         );
+      const staffHasAccount = await this.authService.findByStaffId(staff._id);
+      if (staffHasAccount)
+        throw new HttpException(this.i18nService.t('auth.ERROR.STAFF_HAD_ACCOUNT'), HttpStatus.BAD_REQUEST);
     }
 
     if (value?.customerId) {
