@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Account, AccountDocument, Role, RoleDocument } from './model';
 import { Model } from 'mongoose';
-import { CreateAccountDto, LoginDto } from './dto';
+import { CreateAccountDto, CreateRoleDto, LoginDto } from './dto';
 import { JwtService } from '@nestjs/jwt';
 import { IJWT, IJwtPayload } from './interface';
 import { JwtType } from './enum';
@@ -18,8 +18,8 @@ export class AuthService {
     @InjectModel(Account.name) private accountModel: Model<AccountDocument>,
     @InjectModel(Role.name) private roleModel: Model<RoleDocument>,
     private jwtService: JwtService,
-    private customerService:CustomerService,
-    private staffService:StaffService
+    private customerService: CustomerService,
+    private staffService: StaffService,
   ) {}
 
   async registerStaffAccount(accountData: CreateAccountDto): Promise<Account> {
@@ -27,8 +27,8 @@ export class AuthService {
     return accountCreated;
   }
 
-  async registerCustomerAccount(){
-    return this.accountModel.create()
+  async registerCustomerAccount() {
+    return this.accountModel.create();
   }
 
   async login(loginData: LoginDto): Promise<IJWT> {
@@ -81,5 +81,9 @@ export class AuthService {
 
   getAllRoles(): Promise<Role[]> {
     return this.roleModel.find();
+  }
+
+  async createRole(data: CreateRoleDto) {
+    return this.roleModel.create(data);
   }
 }

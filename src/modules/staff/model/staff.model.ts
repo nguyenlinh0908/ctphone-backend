@@ -15,13 +15,13 @@ export class Staff {
   @Prop({ type: Date, required: true })
   dateOfBirth: Date;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: true, unique: true })
   phone: string;
 
   @Prop({ type: String, required: false })
   email?: string;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: true, unique: true })
   citizenId: string;
 
   @Prop({ type: String, required: true })

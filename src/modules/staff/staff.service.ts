@@ -25,11 +25,10 @@ export class StaffService {
   async find(filter: FilterStaffDto): Promise<PaginateRes<Staff>> {
     const totalRecords = await this.totalRecords();
     const dataOffset = calculateOffset(totalRecords, filter.limit, filter.page);
-
     const staffs = await this.staffModel
       .aggregate()
+      .skip(Number(dataOffset.offset))
       .limit(Number(filter.limit))
-      .skip(Number(dataOffset.offset));
 
     return {
       limit: filter.limit,

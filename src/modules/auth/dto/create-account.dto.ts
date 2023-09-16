@@ -9,7 +9,9 @@ export class CreateAccountDto {
   @IsString()
   password: string;
 
-  @IsNotEmpty()
   @IsString()
-  ownerId: string;
+  staffId?: string;
+
+  @IsString()
+  customerId?: string;
 }
