@@ -10,7 +10,7 @@ import {
   Role,
   RoleSchema,
 } from './model';
-import { LoginValidatePipe } from './pipe';
+import { LoginValidatePipe, RegisterAccountValidatePipe } from './pipe';
 import { JwtModule } from '@nestjs/jwt';
 import { CustomerModule } from '../customer/customer.module';
 import { StaffModule } from '../staff/staff.module';
@@ -27,6 +27,6 @@ import { StaffModule } from '../staff/staff.module';
     StaffModule
   ],
   controllers: [AuthController],
-  providers: [AuthService, LoginValidatePipe],
+  providers: [AuthService, LoginValidatePipe, RegisterAccountValidatePipe],
 })
 export class AuthModule {}

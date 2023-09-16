@@ -14,4 +14,8 @@ export class CreateAccountDto {
 
   @IsString()
   customerId?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  roleId: string;
 }

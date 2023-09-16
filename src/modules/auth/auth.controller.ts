@@ -1,21 +1,25 @@
-import { Body, Controller, Get, Post, UsePipes } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { hashString } from 'src/utils/auth';
 import { CreateAccountDto, CreateRoleDto, LoginDto } from './dto';
-import { I18nService } from 'nestjs-i18n';
 import { LoginValidatePipe } from './pipe';
+import { RegisterAccountValidatePipe } from './pipe/register-account-validate.pipe';
 
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private i18n: I18nService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
-  @Post('staff/account/register')
-  async registerStaffAccount(@Body() accountData: CreateAccountDto) {
-    accountData.password = hashString(accountData.password);
-    return await this.authService.registerStaffAccount(accountData);
+  @Post('staff/account')
+  async registerStaffAccount(
+    @Body(RegisterAccountValidatePipe) data: CreateAccountDto,
+  ) {
+    try {
+      const account = await this.authService.registerAccount(data);
+      this.authService.createAccountRole({
+        accountId: data.staffId,
+        roleId: data.roleId,
+      });
+      return account;
+    } catch (error) {}
   }
 
   @Post('login')
@@ -23,8 +27,8 @@ export class AuthController {
     return await this.authService.login(loginData);
   }
 
-  @Post("role")
-  createRole(@Body() data: CreateRoleDto){
-    return this.authService.createRole(data)
+  @Post('role')
+  createRole(@Body() data: CreateRoleDto) {
+    return this.authService.createRole(data);
   }
 }
