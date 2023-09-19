@@ -1,4 +1,4 @@
-import { Inject, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -17,7 +17,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { CustomerModule } from '../customer/customer.module';
 import { StaffModule } from '../staff/staff.module';
 import { RedisCachingModule } from 'src/shared/modules/redis-cache/redis-caching.module';
-import { RedisCachingService } from 'src/shared/modules/redis-cache/redis-caching.service';
+import { JwtStrategy } from './strategies';
+import { JwtAuthGuard, RolesGuard } from './guard';
 
 @Module({
   imports: [
@@ -33,6 +34,13 @@ import { RedisCachingService } from 'src/shared/modules/redis-cache/redis-cachin
     RedisCachingModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, LoginValidatePipe, RegisterAccountValidatePipe],
+  providers: [
+    AuthService,
+    LoginValidatePipe,
+    RegisterAccountValidatePipe,
+    JwtStrategy,
+    JwtAuthGuard,
+    RolesGuard,
+  ],
 })
 export class AuthModule {}

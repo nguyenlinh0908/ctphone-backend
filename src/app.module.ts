@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, ValidationPipe } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
@@ -9,6 +9,8 @@ import { I18nModule, QueryResolver } from 'nestjs-i18n';
 import { join } from 'path';
 import { CustomerModule } from './modules/customer/customer.module';
 import { StaffModule } from './modules/staff/staff.module';
+import { CategoryModule } from './modules/category/category.module';
+import { APP_PIPE } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -31,8 +33,15 @@ import { StaffModule } from './modules/staff/staff.module';
     AuthModule,
     CustomerModule,
     StaffModule,
+    CategoryModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    {
+      provide: APP_PIPE,
+      useClass: ValidationPipe,
+    },
+    AppService,
+  ],
 })
 export class AppModule {}

@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
   CreateAccountDto,
@@ -9,7 +9,7 @@ import {
 } from './dto';
 import { LoginValidatePipe } from './pipe';
 import { RegisterAccountValidatePipe } from './pipe/register-account-validate.pipe';
-import { AuthGuard } from './guard';
+import { JwtAuthGuard, RolesGuard } from './guard';
 import { Roles } from './decorator';
 import { RoleType } from './enum/role.enum';
 
@@ -18,7 +18,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Roles(RoleType.ADMIN)
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post('staff/account')
   async registerStaffAccount(
     @Body(RegisterAccountValidatePipe) data: CreateAccountDto,
@@ -39,21 +39,21 @@ export class AuthController {
   }
 
   @Roles(RoleType.ADMIN)
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post('role')
   createRole(@Body() data: CreateRoleDto) {
     return this.authService.createRole(data);
   }
 
   @Roles(RoleType.ADMIN, RoleType.STAFF, RoleType.CUSTOMER)
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post('re-access')
   reAccessToken(@Body() data: ReAccessTokenDto) {
     return this.authService.genAccessToken(data);
   }
 
   @Roles(RoleType.ADMIN, RoleType.STAFF, RoleType.CUSTOMER)
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post('logout')
   logout(@Body() data: LogoutDto) {
     return this.authService.logout(data);

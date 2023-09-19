@@ -62,15 +62,18 @@ export class AuthService {
       username: loginData.username,
     });
 
-    const userRoles = await this.findAccountRolesByAccountId(
+    const accountRoles = await this.findAccountRolesByAccountId(
       account._id.toString(),
     );
-    const userRoleIds = _.map(userRoles, (item) => item.roleId);
+    const userRoleIds = _.map(accountRoles, (item) => item.roleId);
+
+    const userRoles = await this.findRolesByIds(userRoleIds);
+    const userRoleCodes = _.map(userRoles, (i) => i.code);
 
     const payload: IJwtPayload = {
       _id: account._id,
       username: account.username,
-      role: userRoleIds,
+      roles: userRoleCodes,
     };
 
     const accessToken = this.signJwt(payload, JwtType.ACCESS_TOKEN);
@@ -137,12 +140,12 @@ export class AuthService {
     return this.accountRoleModel.find({ accountId });
   }
 
-  findRoleById(id: string) {
-    return this.roleModel.findById(id);
+  findRolesByIds(ids: string) {
+    return this.roleModel.find({ _id: { $in: ids } });
   }
 
-  findRoleByIds(ids: string[]) {
-    return this.roleModel.find({ _id: { $in: ids } });
+  findRoleById(id: string) {
+    return this.roleModel.findById(id);
   }
 
   createAccountRole(data: CreateAccountRole) {
@@ -187,5 +190,9 @@ export class AuthService {
 
   getRefreshToken(token: string): Promise<RefreshToken> {
     return this.refreshTokenModel.findOne({ token });
+  }
+
+  async isAccessTokenLoggedOut(accessToken: string): Promise<boolean> {
+    return !! await this.redisCachingService.get(accessToken);
   }
 }
