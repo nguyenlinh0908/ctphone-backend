@@ -30,8 +30,11 @@ export class AuthGuard implements CanActivate {
     const bearerToken = req?.headers?.authorization;
     const accessToken = _.replace(bearerToken, 'Bearer ', '');
     try {
-      const payload = this.authService.verifyJwt(accessToken);
+      const tokenSignOuted = await this.redisCachingService.get(accessToken)
+      
+      if(tokenSignOuted) throw new HttpException(this.i18nService.t("auth.ERROR.TOKEN_INVALID"), HttpStatus.UNAUTHORIZED)
 
+      const payload = this.authService.verifyJwt(accessToken);
       const requiredRoles = this.reflector.getAllAndOverride<RoleType[]>(
         ROLES_KEY,
         [context.getHandler(), context.getClass()],

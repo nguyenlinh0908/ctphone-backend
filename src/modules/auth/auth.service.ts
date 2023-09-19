@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   Account,
   AccountDocument,
   AccountRole,
   AccountRoleDocument,
+  RefreshToken,
+  RefreshTokenDocument,
   Role,
   RoleDocument,
 } from './model';
@@ -14,6 +16,8 @@ import {
   CreateAccountRole,
   CreateRoleDto,
   LoginDto,
+  LogoutDto,
+  ReAccessTokenDto,
 } from './dto';
 import { JwtService } from '@nestjs/jwt';
 import { IJWT, IJwtPayload } from './interface';
@@ -24,6 +28,9 @@ import * as dayjs from 'dayjs';
 import { CustomerService } from '../customer/customer.service';
 import { StaffService } from '../staff/staff.service';
 import * as _ from 'lodash';
+import { I18nService } from 'nestjs-i18n';
+import { Redis } from 'ioredis';
+import { RedisCachingService } from 'src/shared/modules/redis-cache/redis-caching.service';
 
 @Injectable()
 export class AuthService {
@@ -32,9 +39,13 @@ export class AuthService {
     @InjectModel(Role.name) private roleModel: Model<RoleDocument>,
     @InjectModel(AccountRole.name)
     private accountRoleModel: Model<AccountRoleDocument>,
+    @InjectModel(RefreshToken.name)
+    private refreshTokenModel: Model<RefreshTokenDocument>,
     private jwtService: JwtService,
     private customerService: CustomerService,
     private staffService: StaffService,
+    private readonly i18nService: I18nService,
+    private redisCachingService: RedisCachingService,
   ) {}
 
   async registerAccount(accountData: CreateAccountDto): Promise<Account> {
@@ -136,5 +147,45 @@ export class AuthService {
 
   createAccountRole(data: CreateAccountRole) {
     return this.accountRoleModel.create(data);
+  }
+
+  genAccessToken(data: ReAccessTokenDto) {
+    const tokenVerified = this.verifyJwt(data.refreshToken);
+    if (!tokenVerified)
+      throw new HttpException(
+        this.i18nService.t('auth.ERROR.TOKEN_INVALID'),
+        HttpStatus.BAD_REQUEST,
+      );
+    return this.signJwt({ ...tokenVerified }, JwtType.ACCESS_TOKEN);
+  }
+
+  async logout(data: LogoutDto): Promise<boolean> {
+    const tokenVerified = this.verifyJwt(data.refreshToken);
+
+    if (!tokenVerified)
+      throw new HttpException(
+        this.i18nService.t('auth.ERROR.TOKEN_INVALID'),
+        HttpStatus.BAD_REQUEST,
+      );
+
+    //caching accessToken expired it when logout still using token to login
+    await this.redisCachingService.set({
+      key: data.accessToken,
+      value: true,
+      ttl: +appEnv().jwt.JWT_TOKEN_EXPIRE_IN,
+    });
+
+    return !!this.createRefreshToken(data.refreshToken);
+  }
+
+  createRefreshToken(token: string): Promise<RefreshToken> {
+    const data: RefreshToken = {
+      token,
+    };
+    return this.refreshTokenModel.create(data);
+  }
+
+  getRefreshToken(token: string): Promise<RefreshToken> {
+    return this.refreshTokenModel.findOne({ token });
   }
 }

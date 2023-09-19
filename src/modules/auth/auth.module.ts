@@ -7,6 +7,8 @@ import {
   AccountRole,
   AccountRoleSchema,
   AccountSchema,
+  RefreshToken,
+  RefreshTokenSchema,
   Role,
   RoleSchema,
 } from './model';
@@ -23,6 +25,7 @@ import { RedisCachingService } from 'src/shared/modules/redis-cache/redis-cachin
       { name: Account.name, schema: AccountSchema },
       { name: Role.name, schema: RoleSchema },
       { name: AccountRole.name, schema: AccountRoleSchema },
+      { name: RefreshToken.name, schema: RefreshTokenSchema },
     ]),
     JwtModule,
     CustomerModule,
