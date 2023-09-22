@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
-import { Customer } from 'src/modules/customer/model';
+import { AccountType } from '../enum';
 
 export type AccountDocument = Account & Document;
 
@@ -14,11 +14,11 @@ export class Account {
   @Prop({ type: String })
   password: string;
 
-  @Prop({ type: Types.ObjectId, required: false })
-  customerId?: Types.ObjectId;
+  @Prop({ type: Types.ObjectId })
+  userId: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, required: false })
-  staffId?: Types.ObjectId;
+  @Prop({ type: String, enum: AccountType, default: AccountType.CUSTOMER })
+  accountType: AccountType;
 }
 
 export const AccountSchema = SchemaFactory.createForClass(Account);

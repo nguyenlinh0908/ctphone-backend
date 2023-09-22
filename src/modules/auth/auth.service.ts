@@ -102,12 +102,8 @@ export class AuthService {
     return await this.accountModel.findOne({ username });
   }
 
-  findByStaffId(staffId: string) {
-    return this.accountModel.find({ staffId });
-  }
-
-  findByCustomerId(customerId: string) {
-    return this.accountModel.find({ customerId });
+  findByUserId(userId: string) {
+    return this.accountModel.find({ userId });
   }
 
   signJwt(payload: IJwtPayload, jwtType: JwtType) {
@@ -193,6 +189,6 @@ export class AuthService {
   }
 
   async isAccessTokenLoggedOut(accessToken: string): Promise<boolean> {
-    return !! await this.redisCachingService.get(accessToken);
+    return !!(await this.redisCachingService.get(accessToken));
   }
 }

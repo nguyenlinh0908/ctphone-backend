@@ -11,6 +11,7 @@ import { I18nService } from 'nestjs-i18n';
 import { hashString } from 'src/utils/auth';
 import { StaffService } from 'src/modules/staff/staff.service';
 import { CustomerService } from 'src/modules/customer/customer.service';
+import { AccountType } from '../enum';
 
 @Injectable()
 export class RegisterAccountValidatePipe implements PipeTransform {
@@ -29,20 +30,23 @@ export class RegisterAccountValidatePipe implements PipeTransform {
         HttpStatus.BAD_REQUEST,
       );
 
-    if (value?.staffId) {
-      const staff = await this.staffService.findById(value.staffId);
+    if (value?.userId) {
+      const staff = await this.staffService.findById(value.userId);
       if (!staff)
         throw new HttpException(
           this.i18nService.t('staff.ERROR.STAFF_NOT_EXIST'),
           HttpStatus.BAD_REQUEST,
         );
-      const staffHasAccount = await this.authService.findByStaffId(staff._id);
-      if (staffHasAccount)
-        throw new HttpException(this.i18nService.t('auth.ERROR.STAFF_HAD_ACCOUNT'), HttpStatus.BAD_REQUEST);
+      const staffHasAccount = await this.authService.findByUserId(staff._id);
+      if (staffHasAccount.length > 0 && value.accountType == AccountType.STAFF)
+        throw new HttpException(
+          this.i18nService.t('auth.ERROR.STAFF_HAD_ACCOUNT'),
+          HttpStatus.BAD_REQUEST,
+        );
     }
 
-    if (value?.customerId) {
-      const customer = await this.customerService.findById(value.customerId);
+    if (value?.userId && value.accountType == AccountType.CUSTOMER) {
+      const customer = await this.customerService.findById(value.userId);
       if (!customer)
         throw new HttpException(
           this.i18nService.t('customer.ERROR.CUSTOMER.NOT_EXIST'),

@@ -1,4 +1,5 @@
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsMongoId, IsNotEmpty, IsString } from 'class-validator';
+import { AccountType } from '../enum';
 
 export class CreateAccountDto {
   @IsNotEmpty()
@@ -9,13 +10,13 @@ export class CreateAccountDto {
   @IsString()
   password: string;
 
-  @IsString()
-  staffId?: string;
-
-  @IsString()
-  customerId?: string;
+  @IsMongoId()
+  userId: string;
 
   @IsString()
   @IsNotEmpty()
   roleId: string;
+
+  @IsEnum(AccountType)
+  accountType: AccountType;
 }
