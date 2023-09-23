@@ -30,7 +30,7 @@ export class RegisterAccountValidatePipe implements PipeTransform {
         HttpStatus.BAD_REQUEST,
       );
 
-    if (value?.userId) {
+    if (value?.userId && value.accountType == AccountType.STAFF) {
       const staff = await this.staffService.findById(value.userId);
       if (!staff)
         throw new HttpException(

@@ -7,14 +7,19 @@ import { CreateCustomerDto } from './dto';
 @Injectable()
 export class CustomerService {
   constructor(
-    @InjectModel(Customer.name) private readonly userModel: Model<CustomerDocument>,
+    @InjectModel(Customer.name)
+    private readonly userModel: Model<CustomerDocument>,
   ) {}
 
-  async findById(userId: string): Promise<Customer> {
-    return await this.userModel.findById(userId);
+  findById(userId: string): Promise<Customer> {
+    return this.userModel.findById(userId);
   }
 
-  async create(userData: CreateCustomerDto): Promise<Customer> {
-    return await this.userModel.create(userData);
+  create(userData: CreateCustomerDto): Promise<Customer> {
+    return this.userModel.create(userData);
+  }
+
+  findAll(){
+    return this.userModel.find()
   }
 }

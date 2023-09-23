@@ -19,8 +19,22 @@ export class AuthController {
 
   @Roles(RoleType.ADMIN)
   @UseGuards(JwtAuthGuard)
-  @Post('staff/account')
+  @Post('staff/account/register')
   async registerStaffAccount(
+    @Body(RegisterAccountValidatePipe) data: CreateAccountDto,
+  ) {
+    try {
+      const account = await this.authService.registerAccount(data);
+      this.authService.createAccountRole({
+        accountId: account._id.toString(),
+        roleId: data.roleId,
+      });
+      return account;
+    } catch (error) {}
+  }
+
+  @Post('customer/account/register')
+  async registerCustomerAccount(
     @Body(RegisterAccountValidatePipe) data: CreateAccountDto,
   ) {
     try {

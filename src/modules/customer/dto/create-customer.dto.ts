@@ -1,5 +1,7 @@
+import { Transform } from 'class-transformer';
 import {
   IsDate,
+  IsDateString,
   IsEnum,
   IsNotEmpty,
   IsOptional,
@@ -14,7 +16,10 @@ export class CreateCustomerDto {
   fullName: string;
 
   @IsNotEmpty()
-  @IsDate()
+  @IsString()
+  @Transform(value => (value as unknown as Date).toISOString(), {
+    toPlainOnly: true
+  })
   dateOfBirth: Date;
 
   @IsNotEmpty()
@@ -23,7 +28,7 @@ export class CreateCustomerDto {
 
   @IsNotEmpty()
   @IsPhoneNumber('VN')
-  phoneNumber: string;
+  phone: string;
 
   @IsOptional()
   @IsString()

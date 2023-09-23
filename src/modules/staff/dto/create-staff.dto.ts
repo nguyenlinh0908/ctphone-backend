@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import { IsDate, IsEmail, IsEmpty, IsEnum, IsNotEmpty, IsPhoneNumber, IsString } from 'class-validator';
 import { Gender } from 'src/shared/enum';
 
@@ -7,7 +8,10 @@ export class CreateStaffDto {
   fullName: string;
 
   @IsNotEmpty()
-  @IsDate()
+  @IsString()
+  @Transform(value => (value as unknown as Date).toISOString(), {
+    toPlainOnly: true
+  })
   dateOfBirth: Date;
 
   @IsNotEmpty()
