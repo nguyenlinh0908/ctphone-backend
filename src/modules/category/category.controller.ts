@@ -15,27 +15,29 @@ import { JwtAuthGuard, RolesGuard } from '../auth/guard';
 import { Roles } from '../auth/decorator';
 import { RoleType } from '../auth/enum';
 
-@Roles(RoleType.ADMIN)
-@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('category')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
-  
+
+  @Roles(RoleType.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Post()
   create(@Body() createCategoryDto: CreateCategoryDto) {
     return this.categoryService.create(createCategoryDto);
   }
 
-  @Get()
+  @Get('all')
   findAll() {
     return this.categoryService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('data') data:any ) {
+  findOne(@Param('data') data: any) {
     return this.categoryService.findOne(data);
   }
 
+  @Roles(RoleType.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -44,6 +46,8 @@ export class CategoryController {
     return this.categoryService.update(+id, updateCategoryDto);
   }
 
+  @Roles(RoleType.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.categoryService.remove(+id);

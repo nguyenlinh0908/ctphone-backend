@@ -16,7 +16,7 @@ export class CategoryService {
   }
 
   findAll() {
-    return `This action returns all category`;
+    return this.categoryModel.find();
   }
 
   findOne(data: any): Promise<Category> {
