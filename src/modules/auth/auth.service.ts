@@ -29,7 +29,6 @@ import { CustomerService } from '../customer/customer.service';
 import { StaffService } from '../staff/staff.service';
 import * as _ from 'lodash';
 import { I18nService } from 'nestjs-i18n';
-import { Redis } from 'ioredis';
 import { RedisCachingService } from 'src/shared/modules/redis-cache/redis-caching.service';
 
 @Injectable()
@@ -74,6 +73,7 @@ export class AuthService {
       _id: account._id,
       username: account.username,
       roles: userRoleCodes,
+      type: account.accountType
     };
 
     const accessToken = this.signJwt(payload, JwtType.ACCESS_TOKEN);
@@ -90,6 +90,7 @@ export class AuthService {
       refreshToken,
       accessTokenExpiresIn,
       refreshTokenExpiresIn,
+      me: payload,
     };
     return jwtToken;
   }

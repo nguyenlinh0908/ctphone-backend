@@ -1,11 +1,9 @@
-import { IsNumber, Min } from 'class-validator';
+import { IsNumberString } from 'class-validator';
 
 export class PaginateFilter {
-  @IsNumber()
-  @Min(1)
-  limit: number;
+  @IsNumberString()
+  limit: number = 13;
 
-  @IsNumber()
-  @Min(1)
-  page: number;
+  @IsNumberString()
+  page: number = 0;
 }
