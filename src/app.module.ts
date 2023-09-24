@@ -12,6 +12,7 @@ import { StaffModule } from './modules/staff/staff.module';
 import { CategoryModule } from './modules/category/category.module';
 import { APP_PIPE } from '@nestjs/core';
 import { ProductModule } from './modules/product/product.module';
+import { WarehouseReceiptModule } from './modules/warehouse_receipt/warehouse_receipt.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { ProductModule } from './modules/product/product.module';
     StaffModule,
     CategoryModule,
     ProductModule,
+    WarehouseReceiptModule
   ],
   controllers: [AppController],
   providers: [

@@ -3,7 +3,7 @@ import { Document } from 'mongoose';
 
 export type RefreshTokenDocument = RefreshToken & Document;
 
-@Schema()
+@Schema({ collection: 'refreshTokens' })
 export class RefreshToken {
   @Prop()
   token: string;
