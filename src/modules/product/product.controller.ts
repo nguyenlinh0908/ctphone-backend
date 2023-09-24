@@ -26,8 +26,8 @@ export class ProductController {
     return this.productService.create(createProductDto);
   }
 
-  @Roles(RoleType.ADMIN)
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  // @Roles(RoleType.ADMIN)
+  // @UseGuards(JwtAuthGuard, RolesGuard)
   @Get("all")
   findAll() {
     return this.productService.findAll();
@@ -35,7 +35,7 @@ export class ProductController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.productService.findOne(+id);
+    return this.productService.findOne(id);
   }
 
   @Roles(RoleType.ADMIN)

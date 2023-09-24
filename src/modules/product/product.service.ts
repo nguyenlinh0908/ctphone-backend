@@ -18,8 +18,12 @@ export class ProductService {
     return this.productModel.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
+  findOne(id: string) {
+    return this.productModel.findById(id)
+  }
+  
+  findById(id: string) {
+    return this.productModel.findById(id)
   }
 
   update(id: number, updateProductDto: UpdateProductDto) {
