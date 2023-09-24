@@ -1,4 +1,5 @@
-import { CreateWarehouseReceiptDetail } from "./create-warehouse_receipt-detail.dto";
+import { WarehouseReceiptStatus } from '../enum';
+import { CreateWarehouseReceiptDetail } from './create-warehouse_receipt-detail.dto';
 
 export class CreateWarehouseReceiptDto {
   accountId?: string;
@@ -7,11 +8,11 @@ export class CreateWarehouseReceiptDto {
 
   inputDate: Date;
 
-  status: boolean;
+  status: WarehouseReceiptStatus = WarehouseReceiptStatus.PENDING;
 
   totalQuantity: number;
 
   totalAmount: number;
 
-  products: CreateWarehouseReceiptDetail[]
+  products: CreateWarehouseReceiptDetail[];
 }

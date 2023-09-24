@@ -3,7 +3,7 @@ import { Document, Types } from 'mongoose';
 
 export type WarehouseReceiptDetailDocument = WarehouseReceiptDetail & Document;
 
-@Schema({collection: "warehouseReceiptDetails"})
+@Schema({ collection: 'warehouseReceiptDetails' })
 export class WarehouseReceiptDetail {
   @Prop({ type: Types.ObjectId })
   productId: Types.ObjectId;
@@ -11,7 +11,7 @@ export class WarehouseReceiptDetail {
   @Prop({ type: Types.ObjectId })
   warehouseReceiptId: Types.ObjectId;
 
-  @Prop({ type: Number })
+  @Prop({ type: String })
   unit: string;
 
   @Prop({ type: Number })

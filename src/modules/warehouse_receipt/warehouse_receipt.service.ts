@@ -1,14 +1,15 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateWarehouseReceiptDto } from './dto/create-warehouse_receipt.dto';
 import { UpdateWarehouseReceiptDto } from './dto/update-warehouse_receipt.dto';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectModel, InjectConnection } from '@nestjs/mongoose';
 import {
   WarehouseReceipt,
   WarehouseReceiptDetail,
   WarehouseReceiptDetailDocument,
   WarehouseReceiptDocument,
 } from './model';
-import { Model } from 'mongoose';
+import { Connection, Model, Types } from 'mongoose';
+import { transaction } from 'src/utils/data';
 
 @Injectable()
 export class WarehouseReceiptService {
@@ -17,33 +18,36 @@ export class WarehouseReceiptService {
     private warehouseReceiptModel: Model<WarehouseReceiptDocument>,
     @InjectModel(WarehouseReceiptDetail.name)
     private warehouseReceiptDetailModel: Model<WarehouseReceiptDetailDocument>,
+    @InjectConnection() private connection: Connection,
   ) {}
 
   async create(createWarehouseReceiptDto: CreateWarehouseReceiptDto) {
-    const warehouseReceiptCreated = await this.warehouseReceiptModel.create(
-      createWarehouseReceiptDto,
-    );
+    return transaction(this.connection, async (session) => {
+      const warehouseReceiptCreated = await this.warehouseReceiptModel.create(
+        createWarehouseReceiptDto,
+      );
 
-    if (!warehouseReceiptCreated) {
-      throw new HttpException('create fail', HttpStatus.BAD_REQUEST);
-    }
+      if (!warehouseReceiptCreated) {
+        throw new HttpException('create fail', HttpStatus.BAD_REQUEST);
+      }
 
-    let bulkWriteWarehouseReceiptDetails = [];
-    for (const product of createWarehouseReceiptDto.products) {
-      bulkWriteWarehouseReceiptDetails.push({
-        insertOne: {
-          document: {
-            ...product,
-            warehouseReceiptId: warehouseReceiptCreated._id,
+      let bulkWriteWarehouseReceiptDetails = [];
+      for (const product of createWarehouseReceiptDto.products) {
+        bulkWriteWarehouseReceiptDetails.push({
+          insertOne: {
+            document: {
+              ...product,
+              warehouseReceipxtId: warehouseReceiptCreated._id,
+            },
           },
-        },
-      });
-    }
+        });
+      }
 
-    this.warehouseReceiptDetailModel.bulkWrite(
-      bulkWriteWarehouseReceiptDetails,
-    );
-    return warehouseReceiptCreated;
+      this.warehouseReceiptDetailModel.bulkWrite(
+        bulkWriteWarehouseReceiptDetails,
+      );
+      return warehouseReceiptCreated;
+    });
   }
 
   findAll() {
@@ -54,8 +58,39 @@ export class WarehouseReceiptService {
     return `This action returns a #${id} warehouseReceipt`;
   }
 
-  update(id: number, updateWarehouseReceiptDto: UpdateWarehouseReceiptDto) {
-    return `This action updates a #${id} warehouseReceipt`;
+  async update(
+    id: string,
+    updateWarehouseReceiptDto: UpdateWarehouseReceiptDto,
+  ) {
+    const warehouseReceiptUpdated =
+      await this.warehouseReceiptModel.findByIdAndUpdate(
+        id,
+        updateWarehouseReceiptDto,
+      );
+    if (!warehouseReceiptUpdated)
+      throw new HttpException('update faild', HttpStatus.BAD_REQUEST);
+    
+    if (
+      updateWarehouseReceiptDto.products.length <= 0 ||
+      !updateWarehouseReceiptDto.products
+    )
+      return warehouseReceiptUpdated;
+
+    let bulkWriteWarehouseReceiptDetails = [];
+    for (const product of updateWarehouseReceiptDto.products) {
+      bulkWriteWarehouseReceiptDetails.push({
+        updateOne: {
+          filter: { productId: product.productId },
+          update: {
+            $set: { ...product, warehouseId: warehouseReceiptUpdated._id },
+          },
+        },
+      });
+    }
+
+    this.warehouseReceiptDetailModel.bulkWrite(
+      bulkWriteWarehouseReceiptDetails,
+    );
   }
 
   remove(id: number) {

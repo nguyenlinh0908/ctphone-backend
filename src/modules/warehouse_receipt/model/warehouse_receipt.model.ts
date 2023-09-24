@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
+import { WarehouseReceiptStatus } from '../enum';
 
 export type WarehouseReceiptDocument = WarehouseReceipt & Document;
 
@@ -11,8 +12,8 @@ export class WarehouseReceipt {
   @Prop({ type: String })
   inputDate: string;
 
-  @Prop()
-  status: boolean;
+  @Prop({type: String, enum: WarehouseReceiptStatus, default: WarehouseReceiptStatus.PENDING})
+  status: WarehouseReceiptStatus;
 
   @Prop({ type: String, required: false })
   note?: string;
