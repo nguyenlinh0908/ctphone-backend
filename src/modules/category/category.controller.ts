@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -14,6 +15,7 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { JwtAuthGuard, RolesGuard } from '../auth/guard';
 import { Roles } from '../auth/decorator';
 import { RoleType } from '../auth/enum';
+import { FilterCategoryDto } from './dto/filter-category.dto';
 
 @Controller('category')
 export class CategoryController {
@@ -51,5 +53,10 @@ export class CategoryController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.categoryService.remove(+id);
+  }
+
+  @Get()
+  find(@Query() filterCategoryDto: FilterCategoryDto) {
+    return this.categoryService.find(filterCategoryDto);
   }
 }

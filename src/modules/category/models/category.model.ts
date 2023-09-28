@@ -8,13 +8,13 @@ export class Category {
   @Prop({ type: String })
   name: string;
 
-  @Prop({ type: Number, min: 0 })
+  @Prop({ type: Number, min: 0, default: 0 })
   left: number;
 
-  @Prop({ type: Number, min: 0 })
+  @Prop({ type: Number, min: 0, default: 1 })
   right: number;
 
-  @Prop({ type: Number, min: 0 })
+  @Prop({ type: Number, min: 0, default: 0 })
   dept: number;
 
   @Prop({ type: Types.ObjectId, required: false, ref: Category.name })

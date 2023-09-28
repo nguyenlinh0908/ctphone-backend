@@ -4,6 +4,7 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Category, CategoryDocument } from './models';
 import { Model, Types } from 'mongoose';
+import { FilterCategoryDto } from './dto/filter-category.dto';
 
 @Injectable()
 export class CategoryService {
@@ -11,16 +12,34 @@ export class CategoryService {
     @InjectModel(Category.name) private categoryModel: Model<CategoryDocument>,
   ) {}
 
-  create(createCategoryDto: CreateCategoryDto) {
-    return this.categoryModel.create(createCategoryDto);
+  async create(createCategoryDto: CreateCategoryDto) {
+    const parent = await this.findOne({ _id: createCategoryDto.parentId });
+
+    await this.categoryModel.updateMany(
+      { right: { $gte: parent.right } },
+      { $inc: { right: 2 } },
+    );
+
+    await this.categoryModel.updateMany(
+      { left: { $gt: parent.right } },
+      { $inc: { left: 2 } },
+    );
+
+    return this.categoryModel.create({
+      ...createCategoryDto,
+      left: parent.right,
+      right: parent.right + 1,
+      dept: parent.dept + 1,
+    });
   }
 
   findAll() {
     return this.categoryModel.find();
   }
 
-  findOne(data: any): Promise<Category> {
-    return this.categoryModel.findOne({ ...data });
+  findOne(condition: FilterCategoryDto): Promise<Category> {
+    console.log('condition :>> ', condition);
+    return this.categoryModel.findOne(condition);
   }
 
   update(id: number, updateCategoryDto: UpdateCategoryDto) {
@@ -29,5 +48,9 @@ export class CategoryService {
 
   remove(id: number) {
     return `This action removes a #${id} category`;
+  }
+
+  find(filter: FilterCategoryDto) {
+    return this.categoryModel.find(filter);
   }
 }
