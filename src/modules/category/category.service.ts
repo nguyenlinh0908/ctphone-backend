@@ -5,6 +5,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Category, CategoryDocument } from './models';
 import { Model, Types } from 'mongoose';
 import { FilterCategoryDto } from './dto/filter-category.dto';
+import { FilterChildrenCategoryDto } from './dto/filter-children-category.dto';
 
 @Injectable()
 export class CategoryService {
@@ -33,12 +34,20 @@ export class CategoryService {
     });
   }
 
+  async findChildren(filter: FilterChildrenCategoryDto) {
+    const category = await this.categoryModel.findById(filter._id);
+    return this.categoryModel.find({
+      dept: {$lte: filter.dept},
+      left: { $gt: category.left },
+      right: { $lt: category.right },
+    });
+  }
+
   findAll() {
     return this.categoryModel.find();
   }
 
   findOne(condition: FilterCategoryDto): Promise<Category> {
-    console.log('condition :>> ', condition);
     return this.categoryModel.findOne(condition);
   }
 

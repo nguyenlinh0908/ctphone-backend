@@ -16,6 +16,7 @@ import { JwtAuthGuard, RolesGuard } from '../auth/guard';
 import { Roles } from '../auth/decorator';
 import { RoleType } from '../auth/enum';
 import { FilterCategoryDto } from './dto/filter-category.dto';
+import { FilterChildrenCategoryDto } from './dto/filter-children-category.dto';
 
 @Controller('category')
 export class CategoryController {
@@ -58,5 +59,10 @@ export class CategoryController {
   @Get()
   find(@Query() filterCategoryDto: FilterCategoryDto) {
     return this.categoryService.find(filterCategoryDto);
+  }
+
+  @Get("children/list")
+  findChildren(@Body() filter: FilterChildrenCategoryDto) {
+    return this.categoryService.findChildren(filter);
   }
 }

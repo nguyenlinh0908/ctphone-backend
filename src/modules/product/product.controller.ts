@@ -5,8 +5,8 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -14,6 +14,8 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { RoleType } from '../auth/enum';
 import { Roles } from '../auth/decorator';
 import { JwtAuthGuard, RolesGuard } from '../auth/guard';
+import { FilterProduct } from './dto/filter-product.dto';
+import { PaginateFilter } from 'src/shared/model/paginate-filter.model';
 
 @Controller('product')
 export class ProductController {
@@ -26,9 +28,9 @@ export class ProductController {
     return this.productService.create(createProductDto);
   }
 
-  // @Roles(RoleType.ADMIN)
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  @Get("all")
+  @Roles(RoleType.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('all')
   findAll() {
     return this.productService.findAll();
   }
@@ -36,6 +38,16 @@ export class ProductController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.productService.findOne(id);
+  }
+
+  @Get()
+  find(@Query() paginate: PaginateFilter, @Body() filter: FilterProduct) {
+    return this.productService.find(filter, paginate);
+  }
+
+  @Get('category/line')
+  findLine(@Query() paginate: PaginateFilter, @Query() filter: FilterProduct) {
+    return this.productService.findLine(paginate, filter);
   }
 
   @Roles(RoleType.ADMIN)
