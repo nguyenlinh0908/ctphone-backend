@@ -1,4 +1,11 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
   CreateAccountDto,
@@ -12,7 +19,9 @@ import { RegisterAccountValidatePipe } from './pipe/register-account-validate.pi
 import { JwtAuthGuard, RolesGuard } from './guard';
 import { Roles } from './decorator';
 import { RoleType } from './enum/role.enum';
+import { ResTransformInterceptor } from 'src/shared/interceptor';
 
+@UseInterceptors(ResTransformInterceptor)
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -61,7 +70,7 @@ export class AuthController {
 
   @Roles(RoleType.ADMIN, RoleType.STAFF, RoleType.CUSTOMER)
   @UseGuards(JwtAuthGuard)
-  @Post('re-access')
+  @Post('gen-access')
   reAccessToken(@Body() data: ReAccessTokenDto) {
     return this.authService.genAccessToken(data);
   }

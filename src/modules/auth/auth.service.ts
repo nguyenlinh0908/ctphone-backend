@@ -73,17 +73,20 @@ export class AuthService {
       _id: account._id,
       username: account.username,
       roles: userRoleCodes,
-      type: account.accountType
+      type: account.accountType,
     };
 
     const accessToken = this.signJwt(payload, JwtType.ACCESS_TOKEN);
     const refreshToken = this.signJwt(payload, JwtType.REFRESH_TOKEN);
 
-    const currentTimestamp = dayjs().valueOf();
+    const currentTimestamp = new Date().getTime();
     const accessTokenExpiresIn =
       currentTimestamp + ms(appEnv().jwt.JWT_TOKEN_EXPIRE_IN);
     const refreshTokenExpiresIn =
       currentTimestamp + ms(appEnv().jwt.JWT_REFRESH_TOKEN_EXPIRE_IN);
+
+    const refreshTokenExpireAt = new Date(refreshTokenExpiresIn);
+    this.createRefreshToken(refreshToken, refreshTokenExpireAt);
 
     const jwtToken: IJWT = {
       accessToken,
@@ -149,25 +152,47 @@ export class AuthService {
     return this.accountRoleModel.create(data);
   }
 
-  genAccessToken(data: ReAccessTokenDto) {
-    const tokenVerified = this.verifyJwt(data.refreshToken);
-    if (!tokenVerified)
+  async genAccessToken(data: ReAccessTokenDto): Promise<IJWT> {
+    const tokenExisted = await this.getRefreshToken({
+      token: data.refreshToken,
+      expiredAt: { $gt: new Date() },
+    });
+
+    if (!tokenExisted)
       throw new HttpException(
-        this.i18nService.t('auth.ERROR.TOKEN_INVALID'),
+        this.i18nService.t('auth.ERROR.INVALID_TOKEN'),
         HttpStatus.BAD_REQUEST,
       );
-    return this.signJwt({ ...tokenVerified }, JwtType.ACCESS_TOKEN);
+    const tokenVerified = this.verifyJwt(data.refreshToken);
+    delete tokenVerified.exp;
+    delete tokenVerified.iat;
+
+    const accessToken = this.signJwt(
+      { ...tokenVerified },
+      JwtType.ACCESS_TOKEN,
+    );
+    const refreshToken = this.signJwt(tokenVerified, JwtType.REFRESH_TOKEN);
+
+    const currentTimestamp = new Date().getTime();
+    const accessTokenExpiresIn =
+      currentTimestamp + ms(appEnv().jwt.JWT_TOKEN_EXPIRE_IN);
+    const refreshTokenExpiresIn =
+      currentTimestamp + ms(appEnv().jwt.JWT_REFRESH_TOKEN_EXPIRE_IN);
+
+    await this.deleteRefreshToken(data.refreshToken);
+    this.createRefreshToken(refreshToken, refreshTokenExpiresIn);
+
+    return {
+      accessToken,
+      refreshToken,
+      accessTokenExpiresIn,
+      refreshTokenExpiresIn,
+      me: tokenVerified,
+    };
   }
 
   async logout(data: LogoutDto): Promise<boolean> {
     const tokenVerified = this.verifyJwt(data.refreshToken);
-
-    if (!tokenVerified)
-      throw new HttpException(
-        this.i18nService.t('auth.ERROR.TOKEN_INVALID'),
-        HttpStatus.BAD_REQUEST,
-      );
-
     //caching accessToken expired it when logout still using token to login
     await this.redisCachingService.set({
       key: data.accessToken,
@@ -175,18 +200,25 @@ export class AuthService {
       ttl: +appEnv().jwt.JWT_TOKEN_EXPIRE_IN,
     });
 
-    return !!this.createRefreshToken(data.refreshToken);
+    if (!tokenVerified) return true;
+    this.deleteRefreshToken(data.refreshToken);
+    return true;
   }
 
-  createRefreshToken(token: string): Promise<RefreshToken> {
+  createRefreshToken(token: string, expiredAt: Date): Promise<RefreshToken> {
     const data: RefreshToken = {
       token,
+      expiredAt,
     };
     return this.refreshTokenModel.create(data);
   }
 
-  getRefreshToken(token: string): Promise<RefreshToken> {
-    return this.refreshTokenModel.findOne({ token });
+  deleteRefreshToken(token: string) {
+    return this.refreshTokenModel.deleteOne({ token });
+  }
+
+  getRefreshToken(filter: any): Promise<RefreshToken> {
+    return this.refreshTokenModel.findOne({ ...filter });
   }
 
   async isAccessTokenLoggedOut(accessToken: string): Promise<boolean> {

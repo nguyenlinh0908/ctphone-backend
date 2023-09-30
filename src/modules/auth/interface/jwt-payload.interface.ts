@@ -7,4 +7,7 @@ export interface IJwtPayload {
   username: string;
   roles: Role[];
   type: AccountType;
+
+  exp?: number;
+  iat?: number;
 }

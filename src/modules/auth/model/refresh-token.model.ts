@@ -7,6 +7,9 @@ export type RefreshTokenDocument = RefreshToken & Document;
 export class RefreshToken {
   @Prop()
   token: string;
+
+  @Prop()
+  expiredAt: Date
 }
 
 export const RefreshTokenSchema = SchemaFactory.createForClass(RefreshToken);
