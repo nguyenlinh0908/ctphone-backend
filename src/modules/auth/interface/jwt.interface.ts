@@ -3,7 +3,7 @@ import { IJwtPayload } from "./jwt-payload.interface";
 export interface IJWT {
   accessToken: string;
   refreshToken: string;
-  accessTokenExpiresIn: Date;
-  refreshTokenExpiresIn: Date;
+  accessTokenExpiresAt: Date;
+  refreshTokenExpiresAt: Date;
   me: IJwtPayload
 }

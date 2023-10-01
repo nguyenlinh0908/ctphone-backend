@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Query,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -17,7 +18,9 @@ import { Roles } from '../auth/decorator';
 import { RoleType } from '../auth/enum';
 import { FilterCategoryDto } from './dto/filter-category.dto';
 import { FilterChildrenCategoryDto } from './dto/filter-children-category.dto';
+import { ResTransformInterceptor } from 'src/shared/interceptor';
 
+@UseInterceptors(ResTransformInterceptor)
 @Controller('category')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
@@ -61,7 +64,7 @@ export class CategoryController {
     return this.categoryService.find(filterCategoryDto);
   }
 
-  @Get("children/list")
+  @Get('children/list')
   findChildren(@Body() filter: FilterChildrenCategoryDto) {
     return this.categoryService.findChildren(filter);
   }

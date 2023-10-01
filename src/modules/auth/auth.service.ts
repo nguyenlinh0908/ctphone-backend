@@ -80,19 +80,19 @@ export class AuthService {
     const refreshToken = this.signJwt(payload, JwtType.REFRESH_TOKEN);
 
     const currentTimestamp = new Date().getTime();
-    const accessTokenExpiresIn =
+    const accessTokenExpiresAt =
       currentTimestamp + ms(appEnv().jwt.JWT_TOKEN_EXPIRE_IN);
-    const refreshTokenExpiresIn =
+    const refreshTokenExpiresAt =
       currentTimestamp + ms(appEnv().jwt.JWT_REFRESH_TOKEN_EXPIRE_IN);
 
-    const refreshTokenExpireAt = new Date(refreshTokenExpiresIn);
+    const refreshTokenExpireAt = new Date(refreshTokenExpiresAt);
     this.createRefreshToken(refreshToken, refreshTokenExpireAt);
 
     const jwtToken: IJWT = {
       accessToken,
       refreshToken,
-      accessTokenExpiresIn,
-      refreshTokenExpiresIn,
+      accessTokenExpiresAt,
+      refreshTokenExpiresAt,
       me: payload,
     };
     return jwtToken;
@@ -174,19 +174,19 @@ export class AuthService {
     const refreshToken = this.signJwt(tokenVerified, JwtType.REFRESH_TOKEN);
 
     const currentTimestamp = new Date().getTime();
-    const accessTokenExpiresIn =
+    const accessTokenExpiresAt =
       currentTimestamp + ms(appEnv().jwt.JWT_TOKEN_EXPIRE_IN);
-    const refreshTokenExpiresIn =
+    const refreshTokenExpiresAt =
       currentTimestamp + ms(appEnv().jwt.JWT_REFRESH_TOKEN_EXPIRE_IN);
 
     await this.deleteRefreshToken(data.refreshToken);
-    this.createRefreshToken(refreshToken, refreshTokenExpiresIn);
+    this.createRefreshToken(refreshToken, refreshTokenExpiresAt);
 
     return {
       accessToken,
       refreshToken,
-      accessTokenExpiresIn,
-      refreshTokenExpiresIn,
+      accessTokenExpiresAt,
+      refreshTokenExpiresAt,
       me: tokenVerified,
     };
   }

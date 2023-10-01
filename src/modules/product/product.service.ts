@@ -36,36 +36,22 @@ export class ProductService {
     return `This action updates a #${id} product`;
   }
 
-  find(filter: FilterProduct, paginate: PaginateFilter) {
+  find(filter: FilterProduct) {
     const offset = calculateOffset(
       0,
-      Number(paginate.limit),
-      Number(paginate.page),
+      Number(filter.limit),
+      Number(filter.page),
     );
 
+    const limit = filter.limit;
+    delete filter.limit;
+    delete filter.page;
+    const condition = filter;
+console.log('condition :>> ', condition);
     return this.productModel
       .aggregate()
-      .match(filter)
-      .limit(Number(paginate.page))
-      .skip(offset.offset);
-  }
-
-  async findLine(paginate: PaginateFilter, filter: FilterProduct) {
-    console.log('filter :>> ', filter);
-    const categoryChildren = await this.categoryService.findChildren({
-      _id: filter.categoryId,
-      dept: 3,
-    });
-    console.log(categoryChildren);
-    const categoryIds = _.map(categoryChildren, (child) => String(child._id));
-    const offset = calculateOffset(
-      0,
-      Number(paginate.limit),
-      Number(paginate.page),
-    );
-    return this.productModel
-      .find({ categoryId: { $in: categoryIds } })
-      .limit(paginate.limit)
-      .skip(offset.offset);
+      .match(condition)
+      .limit(Number(limit))
+      .skip(offset.offset)
   }
 }

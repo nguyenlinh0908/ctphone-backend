@@ -7,6 +7,7 @@ import {
   Param,
   UseGuards,
   Query,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -16,7 +17,9 @@ import { Roles } from '../auth/decorator';
 import { JwtAuthGuard, RolesGuard } from '../auth/guard';
 import { FilterProduct } from './dto/filter-product.dto';
 import { PaginateFilter } from 'src/shared/model/paginate-filter.model';
+import { ResTransformInterceptor } from 'src/shared/interceptor';
 
+@UseInterceptors(ResTransformInterceptor)
 @Controller('product')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
@@ -41,13 +44,8 @@ export class ProductController {
   }
 
   @Get()
-  find(@Query() paginate: PaginateFilter, @Body() filter: FilterProduct) {
-    return this.productService.find(filter, paginate);
-  }
-
-  @Get('category/line')
-  findLine(@Query() paginate: PaginateFilter, @Query() filter: FilterProduct) {
-    return this.productService.findLine(paginate, filter);
+  find(@Query() filter: FilterProduct) {
+    return this.productService.find(filter);
   }
 
   @Roles(RoleType.ADMIN)

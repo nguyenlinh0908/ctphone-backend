@@ -15,29 +15,30 @@ export class CategoryService {
 
   async create(createCategoryDto: CreateCategoryDto) {
     const parent = await this.findOne({ _id: createCategoryDto.parentId });
+    if (parent) {
+      await this.categoryModel.updateMany(
+        { right: { $gte: parent.right } },
+        { $inc: { right: 2 } },
+      );
 
-    await this.categoryModel.updateMany(
-      { right: { $gte: parent.right } },
-      { $inc: { right: 2 } },
-    );
-
-    await this.categoryModel.updateMany(
-      { left: { $gt: parent.right } },
-      { $inc: { left: 2 } },
-    );
+      await this.categoryModel.updateMany(
+        { left: { $gt: parent.right } },
+        { $inc: { left: 2 } },
+      );
+    }
 
     return this.categoryModel.create({
       ...createCategoryDto,
-      left: parent.right,
-      right: parent.right + 1,
-      dept: parent.dept + 1,
+      left: parent?.right || 1,
+      right: parent?.right ? parent.right + 1 : 2,
+      dept: parent?.dept ? parent.dept + 1 : 0,
     });
   }
 
   async findChildren(filter: FilterChildrenCategoryDto) {
     const category = await this.categoryModel.findById(filter._id);
     return this.categoryModel.find({
-      dept: {$lte: filter.dept},
+      dept: { $lte: filter.dept },
       left: { $gt: category.left },
       right: { $lt: category.right },
     });
