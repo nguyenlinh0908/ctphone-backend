@@ -13,6 +13,7 @@ import { CategoryModule } from './modules/category/category.module';
 import { APP_PIPE } from '@nestjs/core';
 import { ProductModule } from './modules/product/product.module';
 import { WarehouseReceiptModule } from './modules/warehouse_receipt/warehouse_receipt.module';
+import { OrderModule } from './modules/order/order.module';
 
 @Module({
   imports: [
@@ -37,7 +38,8 @@ import { WarehouseReceiptModule } from './modules/warehouse_receipt/warehouse_re
     StaffModule,
     CategoryModule,
     ProductModule,
-    WarehouseReceiptModule
+    WarehouseReceiptModule,
+    OrderModule
   ],
   controllers: [AppController],
   providers: [
