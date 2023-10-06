@@ -3,7 +3,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Product, ProductDocument } from './models';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { FilterProduct } from './dto/filter-product.dto';
 import { PaginateFilter } from 'src/shared/model/paginate-filter.model';
 import { calculateOffset } from 'src/utils/data';
@@ -28,7 +28,7 @@ export class ProductService {
     return this.productModel.findById(id);
   }
 
-  findById(id: string) {
+  findById(id: Types.ObjectId): Promise<Product> {
     return this.productModel.findById(id);
   }
 
@@ -47,11 +47,10 @@ export class ProductService {
     delete filter.limit;
     delete filter.page;
     const condition = filter;
-console.log('condition :>> ', condition);
     return this.productModel
       .aggregate()
       .match(condition)
       .limit(Number(limit))
-      .skip(offset.offset)
+      .skip(offset.offset);
   }
 }

@@ -7,9 +7,16 @@ import {
   OrderDocument,
 } from './model';
 import { Model, Types } from 'mongoose';
-import { CreateOrderDetailDto, CreateOrderDto } from './dto';
+import {
+  CreateOrderDetailDto,
+  CreateOrderDto,
+  FilterOrderDetailDto,
+  UpdateCartDto,
+} from './dto';
 import { FilterOrderDto } from './dto/filter-order.dto';
 import * as _ from 'lodash';
+import { CartAction } from './enum';
+import { Product } from '../product/models';
 
 @Injectable()
 export class OrderService {
@@ -37,15 +44,73 @@ export class OrderService {
     return this.orderDetailModel.deleteMany({ orderId });
   }
 
-  findOneBy(filterOrderDto: FilterOrderDto) {
+  findOneBy(filterOrderDto: FilterOrderDto): Promise<Order> {
     return this.orderModel.findOne(filterOrderDto);
   }
 
-  findOneAndUpdateHasUpsertOrderDetailBy() {
-    return this.orderDetailModel.findOneAndUpdate(
-      { orderId: 1 },
-      {},
-      { upsert: true },
-    );
+  findOneOrderDetail(filter: FilterOrderDetailDto): Promise<OrderDetail> {
+    return this.orderDetailModel.findOne(filter);
+  }
+
+  findOrderDetail(filter: FilterOrderDetailDto): Promise<OrderDetail[]> {
+    return this.orderDetailModel.find(filter);
+  }
+
+  findOneAndUpdateUpsertOrderDetail(filter: FilterOrderDetailDto, data: any) {
+    return this.orderDetailModel.findOneAndUpdate(filter, data, {
+      upsert: true,
+    });
+  }
+
+  deleteOneOrderDetail(filter: FilterOrderDetailDto) {
+    return this.orderDetailModel.deleteOne(filter);
+  }
+
+  async updateOrderDetailByCartAction(
+    updateCartDto: UpdateCartDto,
+    cart: Order,
+    product: Product,
+  ) {
+    console.log('updateCartDto :>> ', updateCartDto);
+    console.log('product :>> ', product);
+    switch (updateCartDto.action) {
+      case CartAction.ADD:
+        await this.findOneAndUpdateUpsertOrderDetail(
+          {
+            orderId: cart._id.toString(),
+            productId: updateCartDto.productId,
+          },
+          {
+            ...updateCartDto,
+            orderId: cart._id.toString(),
+            $inc: { quantity: 1, amount: product.price },
+          },
+        );
+        break;
+      case CartAction.MINUS:
+        const orderDetail = await this.findOneOrderDetail({
+          orderId: cart._id.toString(),
+          productId: updateCartDto.productId,
+        });
+        if (orderDetail.quantity > 1) {
+          await this.findOneAndUpdateUpsertOrderDetail(
+            {
+              orderId: cart._id.toString(),
+              productId: updateCartDto.productId,
+            },
+            {
+              ...updateCartDto,
+              $inc: { quantity: -1, amount: -product.price },
+            },
+          );
+        }
+        await this.deleteOneOrderDetail({
+          orderId: cart._id.toString(),
+          productId: updateCartDto.productId,
+        });
+
+        break;
+      default:
+    }
   }
 }

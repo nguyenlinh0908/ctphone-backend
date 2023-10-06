@@ -5,6 +5,8 @@ export type OrderDetailDocument = OrderDetail & Document;
 
 @Schema()
 export class OrderDetail {
+  _id: Types.ObjectId;
+
   @Prop({ type: Types.ObjectId })
   orderId: Types.ObjectId;
 

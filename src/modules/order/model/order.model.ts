@@ -6,6 +6,8 @@ export type OrderDocument = Order & Document;
 
 @Schema({ timestamps: true })
 export class Order {
+  _id: Types.ObjectId
+  
   @Prop({ type: Types.ObjectId })
   ownerId: Types.ObjectId;
 
