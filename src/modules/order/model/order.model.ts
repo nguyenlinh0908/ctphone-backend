@@ -17,11 +17,14 @@ export class Order {
   @Prop({ type: String })
   code: string;
 
-  @Prop({ type: Number })
+  @Prop({ type: Number, default: 0 })
   totalQuantity: number;
 
-  @Prop({ type: Number })
-  totalAmount: number;
+  @Prop({ type: Number, default: 0 })
+  totalAmountBeforeDiscount: number;
+
+  @Prop({ type: Number, default: 0 })
+  totalAmountAfterDiscount: number;
 
   @Prop({ type: String, required: false })
   note?: string;

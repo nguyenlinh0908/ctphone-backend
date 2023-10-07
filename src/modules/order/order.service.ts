@@ -30,6 +30,10 @@ export class OrderService {
     return this.orderModel.create(createOrderDto);
   }
 
+  updateOneOrder(filter: FilterOrderDto, data: any) {
+    return this.orderModel.updateOne(filter, data);
+  }
+
   createOrderDetail(
     orderId: Types.ObjectId,
     createOrderDetailDto: CreateOrderDetailDto[],
@@ -65,9 +69,13 @@ export class OrderService {
       .exec();
   }
 
-  findOneAndUpdateUpsertOrderDetail(filter: FilterOrderDetailDto, data: any) {
+  findOneAndUpdateUpsertOrderDetail(
+    filter: FilterOrderDetailDto,
+    data: any,
+  ): Promise<OrderDetail> {
     return this.orderDetailModel.findOneAndUpdate(filter, data, {
       upsert: true,
+      new: true,
     });
   }
 
@@ -93,13 +101,29 @@ export class OrderService {
             $inc: { quantity: 1, amount: product.price },
           },
         );
+        await this.updateOneOrder(
+          { _id: cart._id },
+          {
+            $inc: {
+              totalQuantity: 1,
+              totalAmountBeforeDiscount: product.price,
+              totalAmountAfterDiscount: product.price,
+            },
+          },
+        );
+
         break;
       case CartAction.MINUS:
         const orderDetail = await this.findOneOrderDetail({
           orderId: cart._id.toString(),
           productId: updateCartDto.productId,
         });
-        if (orderDetail.quantity > 1) {
+        if (orderDetail.quantity <= 1) {
+          await this.deleteOneOrderDetail({
+            orderId: cart._id.toString(),
+            productId: updateCartDto.productId,
+          });
+        } else {
           await this.findOneAndUpdateUpsertOrderDetail(
             {
               orderId: cart._id.toString(),
@@ -111,11 +135,16 @@ export class OrderService {
             },
           );
         }
-        await this.deleteOneOrderDetail({
-          orderId: cart._id.toString(),
-          productId: updateCartDto.productId,
-        });
-
+        await this.updateOneOrder(
+          { _id: cart._id },
+          {
+            $inc: {
+              totalQuantity: -1,
+              totalAmountBeforeDiscount: -product.price,
+              totalAmountAfterDiscount: -product.price,
+            },
+          },
+        );
         break;
       default:
     }
