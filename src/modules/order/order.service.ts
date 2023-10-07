@@ -49,11 +49,20 @@ export class OrderService {
   }
 
   findOneOrderDetail(filter: FilterOrderDetailDto): Promise<OrderDetail> {
-    return this.orderDetailModel.findOne(filter);
+    return this.orderDetailModel
+      .findOne(filter)
+      .populate('orderId', '', Order.name)
+      .populate('productId', '', Product.name)
+
+      .exec();
   }
 
   findOrderDetail(filter: FilterOrderDetailDto): Promise<OrderDetail[]> {
-    return this.orderDetailModel.find(filter);
+    return this.orderDetailModel
+      .find(filter)
+      .populate('orderId', '', Order.name)
+      .populate('productId', '', Product.name)
+      .exec();
   }
 
   findOneAndUpdateUpsertOrderDetail(filter: FilterOrderDetailDto, data: any) {
@@ -71,8 +80,6 @@ export class OrderService {
     cart: Order,
     product: Product,
   ) {
-    console.log('updateCartDto :>> ', updateCartDto);
-    console.log('product :>> ', product);
     switch (updateCartDto.action) {
       case CartAction.ADD:
         await this.findOneAndUpdateUpsertOrderDetail(

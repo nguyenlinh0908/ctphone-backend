@@ -1,5 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
+import { Order } from './order.model';
+import { Product } from 'src/modules/product/models';
 
 export type OrderDetailDocument = OrderDetail & Document;
 
@@ -7,10 +9,10 @@ export type OrderDetailDocument = OrderDetail & Document;
 export class OrderDetail {
   _id: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId })
+  @Prop({ type: Types.ObjectId, ref: Order.name })
   orderId: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId })
+  @Prop({ type: Types.ObjectId, ref: Product.name })
   productId: Types.ObjectId;
 
   @Prop({ type: Number })
