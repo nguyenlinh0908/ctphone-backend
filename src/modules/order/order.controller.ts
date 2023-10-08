@@ -114,4 +114,11 @@ export class OrderController {
     );
     return deletedOrderDetail;
   }
+
+  @Roles(RoleType.CUSTOMER)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Patch()
+  updateOrder(){
+    
+  }
 }
