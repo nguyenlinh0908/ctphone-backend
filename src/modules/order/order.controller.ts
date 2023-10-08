@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   HttpStatus,
@@ -15,10 +16,11 @@ import { CurrentUser, Roles } from '../auth/decorator';
 import { IJwtPayload } from '../auth/interface';
 import { RoleType } from '../auth/enum';
 import { JwtAuthGuard, RolesGuard } from '../auth/guard';
-import { OrderStatus } from './enum';
+import { CartAction, OrderStatus } from './enum';
 import { ResTransformInterceptor } from 'src/shared/interceptor';
 import { ProductService } from '../product/product.service';
 import { I18nService } from 'nestjs-i18n';
+import { ObjectId } from 'mongodb';
 
 @UseInterceptors(ResTransformInterceptor)
 @Controller('order')
@@ -89,5 +91,27 @@ export class OrderController {
   @Get('cart/detail/:orderId')
   cartDetail(@Param('orderId') orderId: string) {
     return this.orderService.findOrderDetail({ orderId });
+  }
+
+  @Roles(RoleType.CUSTOMER)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Delete('cart/detail/:orderDetailId')
+  async deleteOrderDetail(@Param('orderDetailId') orderDetailId: string) {
+    const deletedOrderDetail =
+      await this.orderService.findOneAndDeleteOrderDetail({
+        _id: new ObjectId(orderDetailId),
+      });
+
+    await this.orderService.updateOneOrder(
+      { _id: deletedOrderDetail.orderId._id, status: OrderStatus.CART },
+      {
+        $inc: {
+          totalQuantity: -deletedOrderDetail.quantity,
+          totalAmountBeforeDiscount: -deletedOrderDetail.amount,
+          totalAmountAfterDiscount: -deletedOrderDetail.amount,
+        },
+      },
+    );
+    return deletedOrderDetail;
   }
 }

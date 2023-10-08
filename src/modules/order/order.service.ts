@@ -79,8 +79,10 @@ export class OrderService {
     });
   }
 
-  deleteOneOrderDetail(filter: FilterOrderDetailDto) {
-    return this.orderDetailModel.deleteOne(filter);
+  findOneAndDeleteOrderDetail(filter: FilterOrderDetailDto) {
+    return this.orderDetailModel
+      .findOneAndDelete(filter)
+      .populate('orderId', '', Order.name).exec();
   }
 
   async updateOrderDetailByCartAction(
@@ -119,7 +121,7 @@ export class OrderService {
           productId: updateCartDto.productId,
         });
         if (orderDetail.quantity <= 1) {
-          await this.deleteOneOrderDetail({
+          await this.findOneAndDeleteOrderDetail({
             orderId: cart._id.toString(),
             productId: updateCartDto.productId,
           });
