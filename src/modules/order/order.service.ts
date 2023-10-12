@@ -155,4 +155,8 @@ export class OrderService {
       default:
     }
   }
+
+  findOrdersInCms(){
+    return this.orderModel.find().sort([['createdAt', -1]])
+  }
 }

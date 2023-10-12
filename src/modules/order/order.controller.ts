@@ -10,19 +10,19 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { OrderService } from './order.service';
-import { CreateOrderDto, UpdateCartDto, UpdateOrderStatusDto } from './dto';
-import { CurrentUser, Roles } from '../auth/decorator';
-import { IJwtPayload } from '../auth/interface';
-import { RoleType } from '../auth/enum';
-import { JwtAuthGuard, RolesGuard } from '../auth/guard';
-import { CartAction, OrderStatus } from './enum';
-import { ResTransformInterceptor } from 'src/shared/interceptor';
-import { ProductService } from '../product/product.service';
-import { I18nService } from 'nestjs-i18n';
 import { ObjectId } from 'mongodb';
 import { Types } from 'mongoose';
-
+import { I18nService } from 'nestjs-i18n';
+import { ResTransformInterceptor } from 'src/shared/interceptor';
+import { CurrentUser, Roles } from '../auth/decorator';
+import { RoleType } from '../auth/enum';
+import { JwtAuthGuard, RolesGuard } from '../auth/guard';
+import { IJwtPayload } from '../auth/interface';
+import { ProductService } from '../product/product.service';
+import { CreateOrderDto, UpdateCartDto } from './dto';
+import { OrderStatus } from './enum';
+import { OrderService } from './order.service';
+import { v4 as uuidV4 } from 'uuid';
 @UseInterceptors(ResTransformInterceptor)
 @Controller('order')
 export class OrderController {
@@ -118,13 +118,35 @@ export class OrderController {
 
   @Roles(RoleType.CUSTOMER)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Patch(":id/buy")
- async updateOrder(@Param('id') id:Types.ObjectId){
-    const order = await this.orderService.findOneBy({_id: id})
+  @Patch(':id/buy')
+  async updateOrder(@Param('id') id: Types.ObjectId) {
+    const order = await this.orderService.findOneBy({ _id: id });
 
-    if(!order) throw new HttpException(this.i18nService.t("order.ERROR.ORDER_NOT_FOUND"), HttpStatus.BAD_REQUEST)
-    if(order.status != OrderStatus.CART) throw new HttpException("order.ERROR.ORDER_STATUS_INVALID", HttpStatus.BAD_REQUEST)
+    if (!order)
+      throw new HttpException(
+        this.i18nService.t('order.ERROR.ORDER_NOT_FOUND'),
+        HttpStatus.BAD_REQUEST,
+      );
+    if (order.status != OrderStatus.CART)
+      throw new HttpException(
+        'order.ERROR.ORDER_STATUS_INVALID',
+        HttpStatus.BAD_REQUEST,
+      );
 
-    return this.orderService.findOneByIdAndUpdateOrder(id, {status: OrderStatus.PENDING})
+    const orderCode = uuidV4({
+      msecs: new Date().getTime()
+    })
+
+    return this.orderService.findOneByIdAndUpdateOrder(id, {
+      status: OrderStatus.PENDING,
+      code: orderCode,
+    });
+  }
+
+  @Roles(RoleType.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('cms')
+  order() {
+    return this.orderService.findOrdersInCms();
   }
 }
