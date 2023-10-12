@@ -79,6 +79,10 @@ export class OrderService {
     });
   }
 
+  findOneByIdAndUpdateOrder(id: Types.ObjectId,data:any){
+    return this.orderModel.findOneAndUpdate({_id: id}, data, {new:true})
+  }
+
   findOneAndDeleteOrderDetail(filter: FilterOrderDetailDto) {
     return this.orderDetailModel
       .findOneAndDelete(filter)

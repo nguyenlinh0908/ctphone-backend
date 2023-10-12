@@ -1,0 +1,6 @@
+{
+    "ERROR":{
+        "ORDER_NOT_FOUND":"order is not found",
+        "ORDER_STATUS_INVALID":"order status invalid"
+    }
+}
