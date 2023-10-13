@@ -19,7 +19,7 @@ import { RoleType } from '../auth/enum';
 import { JwtAuthGuard, RolesGuard } from '../auth/guard';
 import { IJwtPayload } from '../auth/interface';
 import { ProductService } from '../product/product.service';
-import { CreateOrderDto, UpdateCartDto } from './dto';
+import { CreateOrderDto, UpdateCartDto, UpdateOrderStatusDto } from './dto';
 import { OrderStatus } from './enum';
 import { OrderService } from './order.service';
 import { v4 as uuidV4 } from 'uuid';
@@ -80,11 +80,13 @@ export class OrderController {
   @Roles(RoleType.CUSTOMER)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('cart')
-  myCart(@CurrentUser() currentUser: IJwtPayload) {
-    return this.orderService.findOneBy({
+  async myCart(@CurrentUser() currentUser: IJwtPayload) {
+    const result = await this.orderService.findOneBy({
       ownerId: currentUser._id.toString(),
       status: OrderStatus.CART,
     });
+
+    return result ? result : {};
   }
 
   @Roles(RoleType.CUSTOMER)
@@ -118,7 +120,7 @@ export class OrderController {
 
   @Roles(RoleType.CUSTOMER)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Patch(':id/buy')
+  @Patch(':id/checkout')
   async updateOrder(@Param('id') id: Types.ObjectId) {
     const order = await this.orderService.findOneBy({ _id: id });
 
@@ -134,8 +136,8 @@ export class OrderController {
       );
 
     const orderCode = uuidV4({
-      msecs: new Date().getTime()
-    })
+      msecs: new Date().getTime(),
+    });
 
     return this.orderService.findOneByIdAndUpdateOrder(id, {
       status: OrderStatus.PENDING,
@@ -148,5 +150,19 @@ export class OrderController {
   @Get('cms')
   order() {
     return this.orderService.findOrdersInCms();
+  }
+
+  @Roles(RoleType.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Patch(':id/confirm')
+  changeStatus(
+    @Param('id') orderId: Types.ObjectId,
+    @Body() updateOrderStatusDto: UpdateOrderStatusDto,
+  ) {
+    
+    return this.orderService.findOneByIdAndUpdateOrder(
+      orderId,
+      updateOrderStatusDto,
+    );
   }
 }
