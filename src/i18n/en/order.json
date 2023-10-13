@@ -1,6 +1,7 @@
 {
-    "ERROR":{
-        "ORDER_NOT_FOUND":"order is not found",
-        "ORDER_STATUS_INVALID":"order status invalid"
-    }
+  "ERROR": {
+    "ORDER_NOT_FOUND": "order is not found",
+    "ORDER_STATUS_INVALID": "order status invalid",
+    "ORDER_BELOW_LEVEL": "Can't update order status below level"
+  }
 }

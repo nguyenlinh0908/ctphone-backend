@@ -5,7 +5,7 @@ import { AccountType } from '../enum';
 export interface IJwtPayload {
   _id: Types.ObjectId;
   username: string;
-  roles: Role[];
+  roles: string[];
   type: AccountType;
 
   exp?: number;

@@ -23,6 +23,8 @@ import { CreateOrderDto, UpdateCartDto, UpdateOrderStatusDto } from './dto';
 import { OrderStatus } from './enum';
 import { OrderService } from './order.service';
 import { v4 as uuidV4 } from 'uuid';
+import * as _ from 'lodash';
+
 @UseInterceptors(ResTransformInterceptor)
 @Controller('order')
 export class OrderController {
@@ -38,13 +40,12 @@ export class OrderController {
   async updateCart(
     @Body() updateCartDto: UpdateCartDto,
     @CurrentUser() currentUser: IJwtPayload,
-  ) {
-    const createOrderDto: CreateOrderDto = {
-      ownerId: currentUser._id,
-      products: [],
+    ) {
+      const createOrderDto: CreateOrderDto = {
+        ownerId: currentUser._id,
+        products: [],
     };
     const product = await this.productService.findById(updateCartDto.productId);
-
     if (!product)
       throw new HttpException(
         this.i18nService.t('product.ERROR.PRODUCT_NOT_EXIST'),
@@ -155,14 +156,43 @@ export class OrderController {
   @Roles(RoleType.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Patch(':id/confirm')
-  changeStatus(
+  async changeStatus(
     @Param('id') orderId: Types.ObjectId,
     @Body() updateOrderStatusDto: UpdateOrderStatusDto,
+    @CurrentUser() currentUser: IJwtPayload,
   ) {
-    
-    return this.orderService.findOneByIdAndUpdateOrder(
-      orderId,
-      updateOrderStatusDto,
+    const order = await this.orderService.findOneBy({ _id: orderId });
+    if (!order)
+      throw new HttpException(
+        this.i18nService.t('order.ERROR.ORDER_NOT_FOUND'),
+        HttpStatus.BAD_REQUEST,
+      );
+
+    const updateOrderStatusDtoIdx = _.indexOf(
+      this.orderService.orderSteps,
+      updateOrderStatusDto.status,
     );
+
+    const orderStatusIdx = _.indexOf(
+      this.orderService.orderSteps,
+      order.status,
+    );
+
+    if (orderStatusIdx >= updateOrderStatusDtoIdx)
+      throw new HttpException(
+        this.i18nService.t('order.ERROR.ORDER_BELOW_LEVEL'),
+        HttpStatus.BAD_REQUEST,
+      );
+
+    if (updateOrderStatusDtoIdx - orderStatusIdx != 1)
+      throw new HttpException(
+        this.i18nService.t('order.ERROR.ORDER_STATUS_INVALID'),
+        HttpStatus.BAD_REQUEST,
+      );
+
+    return this.orderService.findOneByIdAndUpdateOrder(orderId, {
+      status: updateOrderStatusDto.status,
+      merchandiserId: currentUser._id,
+    });
   }
 }

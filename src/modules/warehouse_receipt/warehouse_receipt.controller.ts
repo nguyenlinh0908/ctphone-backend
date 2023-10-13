@@ -50,8 +50,6 @@ export class WarehouseReceiptController {
     @Param('id') id: string,
     @Body() updateWarehouseReceiptDto: UpdateWarehouseReceiptDto,
   ) {
-    console.log('id :>> ', id);
-    console.log('updateWarehouseReceiptDto :>> ', updateWarehouseReceiptDto);
     return this.warehouseReceiptService.update(id, updateWarehouseReceiptDto);
   }
 

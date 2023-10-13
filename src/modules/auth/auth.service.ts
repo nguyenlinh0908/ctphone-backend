@@ -140,7 +140,7 @@ export class AuthService {
     return this.accountRoleModel.find({ accountId });
   }
 
-  findRolesByIds(ids: string) {
+  findRolesByIds(ids: string[]) {
     return this.roleModel.find({ _id: { $in: ids } });
   }
 

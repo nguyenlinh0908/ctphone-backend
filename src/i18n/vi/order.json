@@ -1,6 +1,7 @@
 {
     "ERROR":{
         "ORDER_NOT_FOUND":"Đơn hàng không tồn tại",
-        "ORDER_STATUS_INVALID":"Trạng thái đơn hàng không hợp lệ"
+        "ORDER_STATUS_INVALID":"Trạng thái đơn hàng không hợp lệ",
+        "ORDER_BELOW_LEVEL": "Không thể thay đổi trạng thái sang level thấp hơn"
     }
 }

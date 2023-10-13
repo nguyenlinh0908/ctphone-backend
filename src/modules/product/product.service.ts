@@ -8,7 +8,7 @@ import { FilterProduct } from './dto/filter-product.dto';
 import { PaginateFilter } from 'src/shared/model/paginate-filter.model';
 import { calculateOffset } from 'src/utils/data';
 import { CategoryService } from '../category/category.service';
-import * as _ from 'lodash';
+import * as _ from "lodash";
 
 @Injectable()
 export class ProductService {

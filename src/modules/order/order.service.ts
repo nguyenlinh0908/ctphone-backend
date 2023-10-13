@@ -14,12 +14,20 @@ import {
   UpdateCartDto,
 } from './dto';
 import { FilterOrderDto } from './dto/filter-order.dto';
-import * as _ from 'lodash';
-import { CartAction } from './enum';
+import * as _ from "lodash";
+import { CartAction, OrderStatus } from './enum';
 import { Product } from '../product/models';
 
 @Injectable()
 export class OrderService {
+  public readonly orderSteps: OrderStatus[] = [
+    OrderStatus.CART,
+    OrderStatus.PENDING,
+    OrderStatus.PREPARES_PACKAGE,
+    OrderStatus.IN_TRANSPORT,
+    OrderStatus.SUCCESS,
+  ];
+
   constructor(
     @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
     @InjectModel(OrderDetail.name)
@@ -79,14 +87,15 @@ export class OrderService {
     });
   }
 
-  findOneByIdAndUpdateOrder(id: Types.ObjectId,data:any){
-    return this.orderModel.findOneAndUpdate({_id: id}, data, {new:true})
+  findOneByIdAndUpdateOrder(id: Types.ObjectId, data: any) {
+    return this.orderModel.findOneAndUpdate({ _id: id }, data, { new: true });
   }
 
   findOneAndDeleteOrderDetail(filter: FilterOrderDetailDto) {
     return this.orderDetailModel
       .findOneAndDelete(filter)
-      .populate('orderId', '', Order.name).exec();
+      .populate('orderId', '', Order.name)
+      .exec();
   }
 
   async updateOrderDetailByCartAction(
@@ -156,7 +165,7 @@ export class OrderService {
     }
   }
 
-  findOrdersInCms(){
-    return this.orderModel.find().sort([['createdAt', -1]])
+  findOrdersInCms() {
+    return this.orderModel.find().sort([['createdAt', -1]]);
   }
 }
