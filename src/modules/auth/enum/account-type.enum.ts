@@ -1,4 +1,4 @@
 export enum AccountType {
-    CUSTOMER,
-    STAFF
+  CUSTOMER = 'CUSTOMER',
+  STAFF = 'STAFF',
 }

@@ -17,9 +17,10 @@ import {
 import { LoginValidatePipe } from './pipe';
 import { RegisterAccountValidatePipe } from './pipe/register-account-validate.pipe';
 import { JwtAuthGuard, RolesGuard } from './guard';
-import { Roles } from './decorator';
+import { CurrentUser, Roles } from './decorator';
 import { RoleType } from './enum/role.enum';
 import { ResTransformInterceptor } from 'src/shared/interceptor';
+import { IJwtPayload } from './interface';
 
 @UseInterceptors(ResTransformInterceptor)
 @Controller('auth')
@@ -80,5 +81,12 @@ export class AuthController {
   @Post('logout')
   logout(@Body() data: LogoutDto) {
     return this.authService.logout(data);
+  }
+
+  @Roles(RoleType.ADMIN, RoleType.STAFF, RoleType.CUSTOMER)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('profile')
+  profile(@CurrentUser() currentUser: IJwtPayload) {
+    return this.authService.findById(currentUser._id.toString());
   }
 }

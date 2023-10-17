@@ -197,7 +197,7 @@ export class AuthService {
     await this.redisCachingService.set({
       key: data.accessToken,
       value: true,
-      ttl: +appEnv().jwt.JWT_TOKEN_EXPIRE_IN,
+      ttl: ms(appEnv().jwt.JWT_TOKEN_EXPIRE_IN),
     });
 
     if (!tokenVerified) return true;
