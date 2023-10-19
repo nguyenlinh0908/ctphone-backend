@@ -21,8 +21,7 @@ export class PaymentService {
   createPayment(createVnpayPaymentDto: CreateVnpayPaymentDto) {
     let vnpUrl = '';
 
-    const currentDate = new Date();
-    const createDate = dayjs(currentDate).format('yyyymmddHHmmss');
+    const createDate = dayjs().format('YYYYMMDDHHmmss');
 
     const orderInfo = this.i18nService.t('payment.DESCRIPTION', {
       args: [createVnpayPaymentDto.orderCode],
@@ -52,7 +51,6 @@ export class PaymentService {
     ) {
       vnpParams['vnp_BankCode'] = createVnpayPaymentDto.bankCode;
     }
-
     vnpParams = this.sortObject(vnpParams);
     const signData = queryString.stringify(vnpParams, { encode: false });
     const hmac = crypto.createHmac('sha512', this.vnpSecretKey);
@@ -60,11 +58,12 @@ export class PaymentService {
     vnpParams['vnp_SecureHash'] = signed;
     vnpUrl += '?' + queryString.stringify(vnpParams, { encode: false });
 
-    return vnpUrl;
+    return `${envConfig.VNPAY_URL}${vnpUrl}`;
   }
 
   async handleVnpIpn(req: Request) {
     let vnp_Params = req.query;
+    let secureHash = vnp_Params['vnp_SecureHash'];
 
     let orderCode = vnp_Params['vnp_TxnRef'];
     let rspCode = vnp_Params['vnp_ResponseCode'];
@@ -74,24 +73,20 @@ export class PaymentService {
 
     vnp_Params = this.sortObject(vnp_Params);
 
-    let querystring = require('qs');
-    let signData = querystring.stringify(vnp_Params, { encode: false });
-    let crypto = require('crypto');
+    let signData = queryString.stringify(vnp_Params, { encode: false });
     let hmac = crypto.createHmac('sha512', this.vnpSecretKey);
     let signed = hmac.update(new Buffer(signData, 'utf-8')).digest('hex');
 
-    if (this.vnpSecretKey != signed)
+    if (secureHash != signed)
       return { RspCode: '97', Message: 'Checksum failed' };
-
     const order = await this.orderService.findOneBy({
       code: orderCode.toString(),
     });
-
-    if (!order) return { RspCode: '01', Message: 'Checksum failed' };
+    if (!order) return { RspCode: '01', Message: 'order not found' };
 
     const paymentAmount = vnp_Params['vnp_Amount'];
 
-    if (order.totalAmountAfterDiscount != Number(paymentAmount))
+    if (order.totalAmountAfterDiscount * 100 != Number(paymentAmount))
       return { RspCode: '04', Message: 'Success' };
 
     if (order.paymentStatus != PaymentStatus.PENDING)
@@ -119,7 +114,7 @@ export class PaymentService {
     let vnp_Params = req.query;
 
     let secureHash = vnp_Params['vnp_SecureHash'];
-    let tmnCode = vnp_Params['vnp_TmnCode']
+    let tmnCode = vnp_Params['vnp_TmnCode'];
 
     delete vnp_Params['vnp_SecureHash'];
     delete vnp_Params['vnp_SecureHashType'];
@@ -130,8 +125,8 @@ export class PaymentService {
     let crypto = require('crypto');
     let hmac = crypto.createHmac('sha512', this.vnpSecretKey);
     let signed = hmac.update(new Buffer(signData, 'utf-8')).digest('hex');
-
     if (secureHash === signed && tmnCode === this.vnpTmnCode) {
+      console.log(' :>> in here');
       //Kiem tra xem du lieu trong db co hop le hay khong va thong bao ket qua
       return { code: vnp_Params['vnp_ResponseCode'] };
     }

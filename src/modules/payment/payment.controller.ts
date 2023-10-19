@@ -50,6 +50,7 @@ export class PaymentController {
         orderCode: order.code,
         ipAddr: ipAddr,
         amount: order.totalAmountAfterDiscount,
+        bankCode: createVnpayPaymentInput.bankCode,
       }),
     };
   }
@@ -59,7 +60,7 @@ export class PaymentController {
     return this.paymentService.handleVnpIpn(req);
   }
 
-  @Get('vnp_return')
+  @Get('vnpay_return')
   vnpReturn(@Req() req: Request) {
     return this.paymentService.handleVnpReturn(req);
   }
