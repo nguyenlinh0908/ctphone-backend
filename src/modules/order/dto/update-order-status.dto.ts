@@ -1,5 +1,7 @@
-import { OrderStatus } from "../enum"
+import { OrderStatus, PaymentStatus } from '../enum';
 
 export class UpdateOrderStatusDto {
-    status: OrderStatus
+  status: OrderStatus;
+
+  paymentStatus?: PaymentStatus;
 }

@@ -7,4 +7,6 @@ export class FilterOrderDto {
   ownerId?: Types.ObjectId | string;
 
   status?: OrderStatus;
+
+  code?: string;
 }

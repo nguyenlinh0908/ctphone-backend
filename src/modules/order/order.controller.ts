@@ -20,7 +20,7 @@ import { JwtAuthGuard, RolesGuard } from '../auth/guard';
 import { IJwtPayload } from '../auth/interface';
 import { ProductService } from '../product/product.service';
 import { CreateOrderDto, UpdateCartDto, UpdateOrderStatusDto } from './dto';
-import { OrderStatus } from './enum';
+import { OrderStatus, PaymentStatus } from './enum';
 import { OrderService } from './order.service';
 import { v4 as uuidV4 } from 'uuid';
 import * as _ from 'lodash';
@@ -40,10 +40,10 @@ export class OrderController {
   async updateCart(
     @Body() updateCartDto: UpdateCartDto,
     @CurrentUser() currentUser: IJwtPayload,
-    ) {
-      const createOrderDto: CreateOrderDto = {
-        ownerId: currentUser._id,
-        products: [],
+  ) {
+    const createOrderDto: CreateOrderDto = {
+      ownerId: currentUser._id,
+      products: [],
     };
     const product = await this.productService.findById(updateCartDto.productId);
     if (!product)
@@ -190,9 +190,17 @@ export class OrderController {
         HttpStatus.BAD_REQUEST,
       );
 
+    // auto set payment status success when order status success
+    if (updateOrderStatusDto.status == OrderStatus.SUCCESS)
+      updateOrderStatusDto.paymentStatus = PaymentStatus.SUCCESS;
+
     return this.orderService.findOneByIdAndUpdateOrder(orderId, {
       status: updateOrderStatusDto.status,
       merchandiserId: currentUser._id,
+      paymentStatus:
+        updateOrderStatusDto.paymentStatus && OrderStatus.SUCCESS
+          ? updateOrderStatusDto.paymentStatus
+          : order.paymentStatus,
     });
   }
 }

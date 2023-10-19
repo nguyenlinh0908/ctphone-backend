@@ -23,10 +23,18 @@ export interface IRedis {
   REDIS_PASSWORD?: string;
 }
 
+export interface IVnpay {
+  TMN_CODE: string;
+  SECURE_HASH: string;
+  URL: string;
+  URL_RETURN: string;
+}
+
 export interface IAppConfig {
   database: IDatabase;
   jwt: IJWT;
   redis: IRedis;
+  vnpay: IVnpay;
 }
 
 const env: IAppConfig = {
@@ -42,6 +50,12 @@ const env: IAppConfig = {
   redis: {
     REDIS_HOST: envConfig.REDIS_HOST,
     REDIS_PORT: +envConfig.REDIS_PORT,
+  },
+  vnpay: {
+    TMN_CODE: envConfig.VNPAY_TMN_CODE,
+    SECURE_HASH: envConfig.VNPAY_SECURE_HASH,
+    URL: envConfig.VNPAY_URL,
+    URL_RETURN: envConfig.VNPAY_URL_RETURN,
   },
 };
 
@@ -60,6 +74,12 @@ export const validationSchema = Joi.object({
     REDIS_PORT: Joi.number().required(),
     REDIS_USERNAME: Joi.string().empty(),
     REDIS_PASSWORD: Joi.string().empty(),
+  },
+  vnpay: {
+    TMN_CODE: Joi.string().required(),
+    SECURE_HASH: Joi.string().required(),
+    URL: Joi.string().required(),
+    URL_RETURN: Joi.string().required(),
   },
 });
 

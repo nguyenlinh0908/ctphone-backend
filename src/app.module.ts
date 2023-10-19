@@ -14,6 +14,7 @@ import { APP_PIPE } from '@nestjs/core';
 import { ProductModule } from './modules/product/product.module';
 import { WarehouseReceiptModule } from './modules/warehouse_receipt/warehouse_receipt.module';
 import { OrderModule } from './modules/order/order.module';
+import { PaymentModule } from './modules/payment/payment.module';
 
 @Module({
   imports: [
@@ -39,7 +40,8 @@ import { OrderModule } from './modules/order/order.module';
     CategoryModule,
     ProductModule,
     WarehouseReceiptModule,
-    OrderModule
+    OrderModule,
+    PaymentModule
   ],
   controllers: [AppController],
   providers: [

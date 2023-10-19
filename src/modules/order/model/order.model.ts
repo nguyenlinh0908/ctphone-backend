@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { OrderStatus } from '../enum';
+import { OrderStatus, PaymentStatus } from '../enum';
 import { Document, Types } from 'mongoose';
 
 export type OrderDocument = Order & Document;
@@ -31,6 +31,9 @@ export class Order {
 
   @Prop({ type: String, default: OrderStatus.CART })
   status: OrderStatus;
+
+  @Prop({ type: String, default: PaymentStatus.PENDING })
+  paymentStatus: PaymentStatus;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);
