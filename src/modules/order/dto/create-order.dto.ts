@@ -9,4 +9,6 @@ export class CreateOrderDto {
   ownerId?: Types.ObjectId;
 
   merchandiserId?: Types.ObjectId;
+
+  code?:string
 }

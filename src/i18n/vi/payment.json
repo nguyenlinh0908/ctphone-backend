@@ -1,3 +1,4 @@
 {
-    "DESCRIPTION": "Thanh toán cho đơn hàng {orderCode}"
+    "DESCRIPTION": "Thanh toán cho đơn hàng {orderCode}",
+    "PAYMENT_SUCCESS_NOTIFY":"Thanh toán đơn hàng {orderCode} thành công"
 }

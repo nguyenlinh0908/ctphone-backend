@@ -7,7 +7,7 @@ import * as queryString from 'qs';
 import * as crypto from 'crypto';
 import { Request } from 'express';
 import { OrderService } from '../order/order.service';
-import { PaymentStatus } from '../order/enum';
+import { OrderStatus, PaymentStatus } from '../order/enum';
 
 @Injectable()
 export class PaymentService {
@@ -57,7 +57,7 @@ export class PaymentService {
     const signed = hmac.update(new Buffer(signData, 'utf-8')).digest('hex');
     vnpParams['vnp_SecureHash'] = signed;
     vnpUrl += '?' + queryString.stringify(vnpParams, { encode: false });
-
+console.log('vnpUrl :>> ', vnpUrl);
     return `${envConfig.VNPAY_URL}${vnpUrl}`;
   }
 
@@ -98,7 +98,7 @@ export class PaymentService {
     if (rspCode == '00') {
       await this.orderService.updateOneOrder(
         { _id: order._id },
-        { paymentStatus: PaymentStatus.SUCCESS },
+        { paymentStatus: PaymentStatus.SUCCESS, status: OrderStatus.PENDING },
       );
       return { RspCode: '00', Message: 'Success' };
     } else {
@@ -115,7 +115,7 @@ export class PaymentService {
 
     let secureHash = vnp_Params['vnp_SecureHash'];
     let tmnCode = vnp_Params['vnp_TmnCode'];
-
+    const orderCode = vnp_Params['vnp_TxnRef'];
     delete vnp_Params['vnp_SecureHash'];
     delete vnp_Params['vnp_SecureHashType'];
 
@@ -126,11 +126,15 @@ export class PaymentService {
     let hmac = crypto.createHmac('sha512', this.vnpSecretKey);
     let signed = hmac.update(new Buffer(signData, 'utf-8')).digest('hex');
     if (secureHash === signed && tmnCode === this.vnpTmnCode) {
-      console.log(' :>> in here');
       //Kiem tra xem du lieu trong db co hop le hay khong va thong bao ket qua
       return { code: vnp_Params['vnp_ResponseCode'] };
     }
-    return { code: '97' };
+    return {
+      code: '97',
+      message: this.i18nService.t('payment.PAYMENT_SUCCESS_NOTIFY', {
+        args: [orderCode],
+      }),
+    };
   }
 
   sortObject(obj) {

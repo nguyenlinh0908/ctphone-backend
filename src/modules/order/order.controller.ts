@@ -41,8 +41,14 @@ export class OrderController {
     @Body() updateCartDto: UpdateCartDto,
     @CurrentUser() currentUser: IJwtPayload,
   ) {
+
+    const orderCode = uuidV4({
+      msecs: new Date().getTime(),
+    });
+
     const createOrderDto: CreateOrderDto = {
       ownerId: currentUser._id,
+      code: orderCode,
       products: [],
     };
     const product = await this.productService.findById(updateCartDto.productId);
@@ -136,13 +142,9 @@ export class OrderController {
         HttpStatus.BAD_REQUEST,
       );
 
-    const orderCode = uuidV4({
-      msecs: new Date().getTime(),
-    });
 
     return this.orderService.findOneByIdAndUpdateOrder(id, {
       status: OrderStatus.PENDING,
-      code: orderCode,
     });
   }
 

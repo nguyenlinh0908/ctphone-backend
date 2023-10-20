@@ -1,3 +1,4 @@
 {
-    "DESCRIPTION": "Payment for invoice number {orderCode}"
+    "DESCRIPTION": "Payment for invoice number {orderCode}",
+    "PAYMENT_SUCCESS_NOTIFY":"Payment order {orderCode} successfully"
 }

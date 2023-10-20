@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Ip,
   Post,
+  Render,
   Req,
   UseInterceptors,
 } from '@nestjs/common';
@@ -39,7 +40,7 @@ export class PaymentController {
         this.i18nService.t('order.ERROR.ORDER_NOT_FOUND'),
         HttpStatus.BAD_REQUEST,
       );
-    if (order.status != OrderStatus.PENDING)
+    if (order.status != OrderStatus.CART)
       throw new HttpException(
         this.i18nService.t('order.ERROR.ORDER_STATUS_INVALID'),
         HttpStatus.BAD_REQUEST,
@@ -61,7 +62,16 @@ export class PaymentController {
   }
 
   @Get('vnpay_return')
+  @Render('index')
   vnpReturn(@Req() req: Request) {
     return this.paymentService.handleVnpReturn(req);
+  }
+
+  @Get('testing')
+  @Render('index')
+  backToHome() {
+    return {
+      message: 'Thanh toán đơn hàng thành công',
+    };
   }
 }
