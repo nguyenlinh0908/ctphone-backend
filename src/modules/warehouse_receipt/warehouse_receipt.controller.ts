@@ -30,7 +30,7 @@ export class WarehouseReceiptController {
     @Body() createWarehouseReceiptDto: CreateWarehouseReceiptDto,
     @CurrentUser() currentUser: IJwtPayload,
   ) {
-    createWarehouseReceiptDto.accountId = currentUser._id.toString();
+    createWarehouseReceiptDto.accountId = currentUser._id;
 
     return this.warehouseReceiptService.create(createWarehouseReceiptDto);
   }

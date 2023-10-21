@@ -41,13 +41,12 @@ export class OrderController {
     @Body() updateCartDto: UpdateCartDto,
     @CurrentUser() currentUser: IJwtPayload,
   ) {
-
     const orderCode = uuidV4({
       msecs: new Date().getTime(),
     });
 
     const createOrderDto: CreateOrderDto = {
-      ownerId: currentUser._id,
+      ownerId: new ObjectId(currentUser._id),
       code: orderCode,
       products: [],
     };
@@ -59,7 +58,7 @@ export class OrderController {
       );
 
     const cartExisted = await this.orderService.findOneBy({
-      ownerId: createOrderDto.ownerId,
+      ownerId: new ObjectId(createOrderDto.ownerId),
       status: OrderStatus.CART,
     });
 
@@ -89,7 +88,7 @@ export class OrderController {
   @Get('cart')
   async myCart(@CurrentUser() currentUser: IJwtPayload) {
     const result = await this.orderService.findOneBy({
-      ownerId: currentUser._id.toString(),
+      ownerId: new ObjectId(currentUser._id),
       status: OrderStatus.CART,
     });
 
@@ -99,8 +98,10 @@ export class OrderController {
   @Roles(RoleType.CUSTOMER)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('cart/detail/:orderId')
-  cartDetail(@Param('orderId') orderId: string) {
-    return this.orderService.findOrderDetail({ orderId });
+  cartDetail(@Param('orderId') orderId: Types.ObjectId) {
+    return this.orderService.findOrderDetail({
+      orderId: new ObjectId(orderId),
+    });
   }
 
   @Roles(RoleType.CUSTOMER)
@@ -141,7 +142,6 @@ export class OrderController {
         'order.ERROR.ORDER_STATUS_INVALID',
         HttpStatus.BAD_REQUEST,
       );
-
 
     return this.orderService.findOneByIdAndUpdateOrder(id, {
       status: OrderStatus.PENDING,
@@ -203,6 +203,33 @@ export class OrderController {
         updateOrderStatusDto.paymentStatus && OrderStatus.SUCCESS
           ? updateOrderStatusDto.paymentStatus
           : order.paymentStatus,
+    });
+  }
+
+  @Roles(RoleType.ADMIN, RoleType.STAFF, RoleType.CUSTOMER)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('detail/:orderId')
+  async orderDetail(
+    @Param('orderId') orderId: Types.ObjectId,
+    @CurrentUser() currentUser: IJwtPayload,
+  ) {
+    const order = await this.orderService.findOneBy({ _id: orderId });
+    if (!order)
+      throw new HttpException(
+        this.i18nService.t('order.ORDER_NOT_FOUND'),
+        HttpStatus.BAD_REQUEST,
+      );
+
+    if (
+      !_.includes(currentUser.roles, RoleType.ADMIN) &&
+      order.ownerId != currentUser._id
+    )
+      throw new HttpException(
+        'order.DONT_PERMISSION_ORDER',
+        HttpStatus.BAD_REQUEST,
+      );
+    return this.orderService.findOrderDetail({
+      orderId: order._id,
     });
   }
 }

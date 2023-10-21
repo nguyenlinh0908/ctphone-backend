@@ -10,6 +10,7 @@ import {
 } from './model';
 import { Connection, Model, Types } from 'mongoose';
 import { transaction } from 'src/utils/data';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class WarehouseReceiptService {
@@ -23,9 +24,10 @@ export class WarehouseReceiptService {
 
   async create(createWarehouseReceiptDto: CreateWarehouseReceiptDto) {
     return transaction(this.connection, async (session) => {
-      const warehouseReceiptCreated = await this.warehouseReceiptModel.create(
-        createWarehouseReceiptDto,
-      );
+      const warehouseReceiptCreated = await this.warehouseReceiptModel.create({
+        ...createWarehouseReceiptDto,
+        accountId: new ObjectId(createWarehouseReceiptDto.accountId),
+      });
 
       if (!warehouseReceiptCreated) {
         throw new HttpException('create fail', HttpStatus.BAD_REQUEST);
@@ -37,7 +39,7 @@ export class WarehouseReceiptService {
           insertOne: {
             document: {
               ...product,
-              warehouseReceipxtId: warehouseReceiptCreated._id,
+              warehouseReceiptId: new ObjectId(warehouseReceiptCreated._id),
             },
           },
         });
@@ -69,7 +71,7 @@ export class WarehouseReceiptService {
       );
     if (!warehouseReceiptUpdated)
       throw new HttpException('update faild', HttpStatus.BAD_REQUEST);
-    
+
     if (
       updateWarehouseReceiptDto.products.length <= 0 ||
       !updateWarehouseReceiptDto.products

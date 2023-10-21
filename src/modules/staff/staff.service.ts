@@ -43,7 +43,7 @@ export class StaffService {
     return this.staffModel.findOne();
   }
 
-  findById(staffId: string) {
+  findById(staffId: Types.ObjectId) {
     return this.staffModel.findById(staffId);
   }
 

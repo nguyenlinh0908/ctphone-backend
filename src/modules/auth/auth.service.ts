@@ -10,7 +10,7 @@ import {
   Role,
   RoleDocument,
 } from './model';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import {
   CreateAccountDto,
   CreateAccountRole,
@@ -30,6 +30,7 @@ import { StaffService } from '../staff/staff.service';
 import * as _ from 'lodash';
 import { I18nService } from 'nestjs-i18n';
 import { RedisCachingService } from 'src/shared/modules/redis-cache/redis-caching.service';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class AuthService {
@@ -48,8 +49,10 @@ export class AuthService {
   ) {}
 
   async registerAccount(accountData: CreateAccountDto): Promise<Account> {
-    const accountCreated = await this.accountModel.create(accountData);
-    return accountCreated;
+    return this.accountModel.create({
+      ...accountData,
+      userId: new ObjectId(accountData.userId),
+    });
   }
 
   async registerCustomerAccount() {
@@ -61,11 +64,8 @@ export class AuthService {
       username: loginData.username,
     });
 
-    const accountRoles = await this.findAccountRolesByAccountId(
-      account._id.toString(),
-    );
+    const accountRoles = await this.findAccountRolesByAccountId(account._id);
     const userRoleIds = _.map(accountRoles, (item) => item.roleId);
-
     const userRoles = await this.findRolesByIds(userRoleIds);
     const userRoleCodes = _.map(userRoles, (i) => i.code);
 
@@ -136,15 +136,17 @@ export class AuthService {
     return this.roleModel.create(data);
   }
 
-  findAccountRolesByAccountId(accountId: string) {
+  findAccountRolesByAccountId(
+    accountId: Types.ObjectId,
+  ): Promise<AccountRole[]> {
     return this.accountRoleModel.find({ accountId });
   }
 
-  findRolesByIds(ids: string[]) {
+  findRolesByIds(ids: Types.ObjectId[]) {
     return this.roleModel.find({ _id: { $in: ids } });
   }
 
-  findRoleById(id: string) {
+  findRoleById(id: Types.ObjectId) {
     return this.roleModel.findById(id);
   }
 

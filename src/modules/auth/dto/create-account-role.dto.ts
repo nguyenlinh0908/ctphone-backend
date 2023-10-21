@@ -1,11 +1,12 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsMongoId, IsNotEmpty, IsString } from 'class-validator';
+import { Types } from 'mongoose';
 
 export class CreateAccountRole {
-  @IsString()
+  @IsMongoId()
   @IsNotEmpty()
-  accountId: string;
+  accountId: Types.ObjectId;
 
   @IsNotEmpty()
-  @IsString()
-  roleId: string;
+  @IsMongoId()
+  roleId: Types.ObjectId;
 }

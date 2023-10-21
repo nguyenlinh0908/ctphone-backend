@@ -3,13 +3,13 @@ import { Document, Types } from 'mongoose';
 
 export type AccountRoleDocument = AccountRole & Document;
 
-@Schema({collection: "accountRoles"})
+@Schema({ collection: 'accountRoles' })
 export class AccountRole {
   @Prop({ type: Types.ObjectId })
-  accountId: string;
+  accountId: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId })
-  roleId: string;
+  roleId: Types.ObjectId;
 }
 
 export const AccountRoleSchema = SchemaFactory.createForClass(AccountRole);

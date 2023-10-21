@@ -1,6 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { OrderStatus, PaymentStatus } from '../enum';
 import { Document, Types } from 'mongoose';
+import { Account } from 'src/modules/auth/model';
+import { AccountType } from 'src/modules/auth/enum';
 
 export type OrderDocument = Order & Document;
 
@@ -8,10 +10,10 @@ export type OrderDocument = Order & Document;
 export class Order {
   _id: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId })
+  @Prop({ type: Types.ObjectId, ref: Account.name })
   ownerId: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, required: false })
+  @Prop({ type: Types.ObjectId, required: false, ref: Account.name })
   merchandiserId?: Types.ObjectId;
 
   @Prop({ type: String })

@@ -21,6 +21,7 @@ import { CurrentUser, Roles } from './decorator';
 import { RoleType } from './enum/role.enum';
 import { ResTransformInterceptor } from 'src/shared/interceptor';
 import { IJwtPayload } from './interface';
+import { ObjectId } from 'mongodb';
 
 @UseInterceptors(ResTransformInterceptor)
 @Controller('auth')
@@ -36,8 +37,8 @@ export class AuthController {
     try {
       const account = await this.authService.registerAccount(data);
       this.authService.createAccountRole({
-        accountId: account._id.toString(),
-        roleId: data.roleId,
+        accountId: new ObjectId(account._id),
+        roleId: new ObjectId(data.roleId),
       });
       return account;
     } catch (error) {}
@@ -50,7 +51,7 @@ export class AuthController {
     try {
       const account = await this.authService.registerAccount(data);
       this.authService.createAccountRole({
-        accountId: account._id.toString(),
+        accountId: account._id,
         roleId: data.roleId,
       });
       return account;

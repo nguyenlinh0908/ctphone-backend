@@ -1,5 +1,6 @@
 import { IsEnum, IsMongoId, IsNotEmpty, IsString } from 'class-validator';
 import { AccountType } from '../enum';
+import { Types } from 'mongoose';
 
 export class CreateAccountDto {
   @IsNotEmpty()
@@ -11,11 +12,11 @@ export class CreateAccountDto {
   password: string;
 
   @IsMongoId()
-  userId: string;
+  userId: Types.ObjectId;
 
-  @IsString()
+  @IsMongoId()
   @IsNotEmpty()
-  roleId: string;
+  roleId: Types.ObjectId;
 
   @IsEnum(AccountType)
   accountType: AccountType;

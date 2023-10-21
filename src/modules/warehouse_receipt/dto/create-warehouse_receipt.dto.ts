@@ -1,8 +1,9 @@
+import { Types } from 'mongoose';
 import { WarehouseReceiptStatus } from '../enum';
 import { CreateWarehouseReceiptDetail } from './create-warehouse_receipt-detail.dto';
 
 export class CreateWarehouseReceiptDto {
-  accountId?: string;
+  accountId?: Types.ObjectId;
 
   delivererName: string;
 

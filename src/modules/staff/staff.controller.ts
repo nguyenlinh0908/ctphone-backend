@@ -11,6 +11,7 @@ import { StaffService } from './staff.service';
 import { CreateStaffDto, UpdateStaffDto } from './dto';
 import { MongoIdPipe } from 'src/pipes/mongo-id.pipe';
 import { FilterStaffDto } from './dto/filter-staff.dto';
+import { Types } from 'mongoose';
 
 @Controller('staff')
 export class StaffController {
@@ -27,7 +28,7 @@ export class StaffController {
   }
 
   @Get(':id')
-  findOne(@Param(MongoIdPipe) id: string) {
+  findOne(@Param(MongoIdPipe) id: Types.ObjectId) {
     return this.staffService.findById(id);
   }
 

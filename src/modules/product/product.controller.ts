@@ -18,6 +18,7 @@ import { JwtAuthGuard, RolesGuard } from '../auth/guard';
 import { FilterProduct } from './dto/filter-product.dto';
 import { PaginateFilter } from 'src/shared/model/paginate-filter.model';
 import { ResTransformInterceptor } from 'src/shared/interceptor';
+import { ObjectId } from 'mongodb';
 
 @UseInterceptors(ResTransformInterceptor)
 @Controller('product')
@@ -45,6 +46,7 @@ export class ProductController {
 
   @Get()
   find(@Query() filter: FilterProduct) {
+    if(filter.categoryId) filter.categoryId = new ObjectId(filter.categoryId)
     return this.productService.find(filter);
   }
 

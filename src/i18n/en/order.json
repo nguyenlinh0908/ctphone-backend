@@ -2,6 +2,7 @@
   "ERROR": {
     "ORDER_NOT_FOUND": "order is not found",
     "ORDER_STATUS_INVALID": "order status invalid",
-    "ORDER_BELOW_LEVEL": "Can't update order status below level"
+    "ORDER_BELOW_LEVEL": "Can't update order status below level",
+    "DONT_PERMISSION_ORDER": "You don't have permission with order"
   }
 }

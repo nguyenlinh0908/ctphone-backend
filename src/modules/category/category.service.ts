@@ -6,6 +6,7 @@ import { Category, CategoryDocument } from './models';
 import { Model, Types } from 'mongoose';
 import { FilterCategoryDto } from './dto/filter-category.dto';
 import { FilterChildrenCategoryDto } from './dto/filter-children-category.dto';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class CategoryService {
@@ -29,6 +30,7 @@ export class CategoryService {
 
     return this.categoryModel.create({
       ...createCategoryDto,
+      parentId: new ObjectId(createCategoryDto.parentId),
       left: parent?.right || 1,
       right: parent?.right ? parent.right + 1 : 2,
       dept: parent?.dept ? parent.dept + 1 : 0,

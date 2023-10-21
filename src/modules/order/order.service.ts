@@ -1,12 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import {
-  Order,
-  OrderDetail,
-  OrderDetailDocument,
-  OrderDocument,
-} from './model';
+import * as _ from 'lodash';
+import { ObjectId } from 'mongodb';
 import { Model, Types } from 'mongoose';
+import { Product } from '../product/models';
 import {
   CreateOrderDetailDto,
   CreateOrderDto,
@@ -14,9 +11,13 @@ import {
   UpdateCartDto,
 } from './dto';
 import { FilterOrderDto } from './dto/filter-order.dto';
-import * as _ from "lodash";
 import { CartAction, OrderStatus } from './enum';
-import { Product } from '../product/models';
+import {
+  Order,
+  OrderDetail,
+  OrderDetailDocument,
+  OrderDocument,
+} from './model';
 
 @Injectable()
 export class OrderService {
@@ -47,7 +48,7 @@ export class OrderService {
     createOrderDetailDto: CreateOrderDetailDto[],
   ) {
     const orderDetail = _.map(createOrderDetailDto, (item) => {
-      return { ...item, orderId };
+      return { ...item, orderId, productId: new ObjectId(item.productId) };
     });
     return this.orderDetailModel.create(orderDetail);
   }
@@ -107,12 +108,13 @@ export class OrderService {
       case CartAction.ADD:
         await this.findOneAndUpdateUpsertOrderDetail(
           {
-            orderId: cart._id.toString(),
-            productId: updateCartDto.productId,
+            orderId: cart._id,
+            productId: new ObjectId(updateCartDto.productId),
           },
           {
             ...updateCartDto,
-            orderId: cart._id.toString(),
+            productId: new ObjectId(updateCartDto.productId),
+            orderId: cart._id,
             $inc: { quantity: 1, amount: product.price },
           },
         );
@@ -130,22 +132,23 @@ export class OrderService {
         break;
       case CartAction.MINUS:
         const orderDetail = await this.findOneOrderDetail({
-          orderId: cart._id.toString(),
-          productId: updateCartDto.productId,
+          orderId: cart._id,
+          productId: new ObjectId(updateCartDto.productId),
         });
         if (orderDetail.quantity <= 1) {
           await this.findOneAndDeleteOrderDetail({
-            orderId: cart._id.toString(),
-            productId: updateCartDto.productId,
+            orderId: cart._id,
+            productId: new ObjectId(updateCartDto.productId),
           });
         } else {
           await this.findOneAndUpdateUpsertOrderDetail(
             {
-              orderId: cart._id.toString(),
-              productId: updateCartDto.productId,
+              orderId: cart._id,
+              productId: new ObjectId(updateCartDto.productId),
             },
             {
               ...updateCartDto,
+              productId: new ObjectId(updateCartDto.productId),
               $inc: { quantity: -1, amount: -product.price },
             },
           );

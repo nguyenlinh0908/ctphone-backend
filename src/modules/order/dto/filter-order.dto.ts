@@ -4,7 +4,7 @@ import { Types } from 'mongoose';
 export class FilterOrderDto {
   _id?: Types.ObjectId;
 
-  ownerId?: Types.ObjectId | string;
+  ownerId?: Types.ObjectId;
 
   status?: OrderStatus;
 
