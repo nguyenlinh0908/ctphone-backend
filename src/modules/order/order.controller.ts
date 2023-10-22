@@ -7,29 +7,23 @@ import {
   HttpStatus,
   Param,
   Patch,
-  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import * as _ from 'lodash';
 import { ObjectId } from 'mongodb';
 import { Types } from 'mongoose';
 import { I18nService } from 'nestjs-i18n';
 import { ResTransformInterceptor } from 'src/shared/interceptor';
+import { v4 as uuidV4 } from 'uuid';
 import { CurrentUser, Roles } from '../auth/decorator';
-import { RoleType } from '../auth/enum';
+import { AccountType, RoleType } from '../auth/enum';
 import { JwtAuthGuard, RolesGuard } from '../auth/guard';
 import { IJwtPayload } from '../auth/interface';
 import { ProductService } from '../product/product.service';
-import {
-  CreateOrderDto,
-  FilterOrderDto,
-  UpdateCartDto,
-  UpdateOrderStatusDto,
-} from './dto';
+import { CreateOrderDto, UpdateCartDto, UpdateOrderStatusDto } from './dto';
 import { OrderStatus, PaymentStatus } from './enum';
 import { OrderService } from './order.service';
-import { v4 as uuidV4 } from 'uuid';
-import * as _ from 'lodash';
 
 @UseInterceptors(ResTransformInterceptor)
 @Controller('order')
@@ -103,7 +97,7 @@ export class OrderController {
 
   @Roles(RoleType.CUSTOMER)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Get('cart/detail/:orderId')
+  @Get('cart/:orderId/detail')
   cartDetail(@Param('orderId') orderId: Types.ObjectId) {
     return this.orderService.findOrderDetail({
       orderId: new ObjectId(orderId),
@@ -163,9 +157,9 @@ export class OrderController {
 
   @Roles(RoleType.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Get('cms')
-  order() {
-    return this.orderService.findOrdersInCms();
+  @Get('all')
+  allOrders() {
+    return this.orderService.findAllExceptCart();
   }
 
   @Roles(RoleType.ADMIN)
@@ -221,7 +215,7 @@ export class OrderController {
 
   @Roles(RoleType.ADMIN, RoleType.STAFF, RoleType.CUSTOMER)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Get('detail/:orderId')
+  @Get(':orderId/detail')
   async orderDetail(
     @Param('orderId') orderId: Types.ObjectId,
     @CurrentUser() currentUser: IJwtPayload,
@@ -268,9 +262,24 @@ export class OrderController {
         HttpStatus.BAD_REQUEST,
       );
 
-    return this.orderService.findOneByIdAndUpdateOrder(
-      new ObjectId(orderId),
-      {status: OrderStatus.CANCEL},
-    );
+    return this.orderService.findOneByIdAndUpdateOrder(new ObjectId(orderId), {
+      status: OrderStatus.CANCEL,
+    });
+  }
+
+  @Roles(RoleType.ADMIN, RoleType.STAFF, RoleType.CUSTOMER)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get(':id')
+  async order(
+    @Param('id') orderId: Types.ObjectId,
+    @CurrentUser() currentUser: IJwtPayload,
+  ) {
+    const order = await this.orderService.findOneById(orderId);
+    if (
+      order.ownerId._id != currentUser._id &&
+      currentUser.type == AccountType.CUSTOMER
+    )
+      throw new HttpException('auth.UNAUTHORIZED', HttpStatus.BAD_REQUEST);
+    return order;
   }
 }

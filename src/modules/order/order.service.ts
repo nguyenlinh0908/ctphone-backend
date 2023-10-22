@@ -18,6 +18,7 @@ import {
   OrderDetailDocument,
   OrderDocument,
 } from './model';
+import { Account } from '../auth/model';
 
 @Injectable()
 export class OrderService {
@@ -61,12 +62,18 @@ export class OrderService {
     return this.orderModel.findOne(filterOrderDto);
   }
 
+  findOneById(orderId: Types.ObjectId) {
+    return this.orderModel
+      .findById(orderId)
+      .populate('ownerId', '-password', Account.name)
+      .populate('merchandiserId', '-password', Account.name).exec();
+  }
+
   findOneOrderDetail(filter: FilterOrderDetailDto): Promise<OrderDetail> {
     return this.orderDetailModel
       .findOne(filter)
       .populate('orderId', '', Order.name)
       .populate('productId', '', Product.name)
-
       .exec();
   }
 
@@ -168,8 +175,10 @@ export class OrderService {
     }
   }
 
-  findOrdersInCms() {
-    return this.orderModel.find().sort([['createdAt', -1]]);
+  findAllExceptCart() {
+    return this.orderModel
+      .find({ status: { $ne: OrderStatus.CART } })
+      .sort([['createdAt', -1]]);
   }
 
   findPurchaseHistory(ownerId: Types.ObjectId) {
