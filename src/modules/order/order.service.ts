@@ -171,4 +171,10 @@ export class OrderService {
   findOrdersInCms() {
     return this.orderModel.find().sort([['createdAt', -1]]);
   }
+
+  findPurchaseHistory(ownerId: Types.ObjectId) {
+    return this.orderModel
+      .find({ ownerId, status: { $ne: OrderStatus.CART } })
+      .sort({ createdAt: -1 });
+  }
 }

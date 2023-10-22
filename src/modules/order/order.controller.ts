@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Param,
   Patch,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -19,7 +20,12 @@ import { RoleType } from '../auth/enum';
 import { JwtAuthGuard, RolesGuard } from '../auth/guard';
 import { IJwtPayload } from '../auth/interface';
 import { ProductService } from '../product/product.service';
-import { CreateOrderDto, UpdateCartDto, UpdateOrderStatusDto } from './dto';
+import {
+  CreateOrderDto,
+  FilterOrderDto,
+  UpdateCartDto,
+  UpdateOrderStatusDto,
+} from './dto';
 import { OrderStatus, PaymentStatus } from './enum';
 import { OrderService } from './order.service';
 import { v4 as uuidV4 } from 'uuid';
@@ -148,6 +154,13 @@ export class OrderController {
     });
   }
 
+  @Roles(RoleType.CUSTOMER)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('purchase_history')
+  myOrders(@CurrentUser() currentUser: IJwtPayload) {
+    return this.orderService.findPurchaseHistory(new ObjectId(currentUser._id));
+  }
+
   @Roles(RoleType.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('cms')
@@ -231,5 +244,33 @@ export class OrderController {
     return this.orderService.findOrderDetail({
       orderId: order._id,
     });
+  }
+
+  @Roles(RoleType.CUSTOMER)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Patch(':orderId/cancel')
+  async cancel(
+    @Param('orderId') orderId: Types.ObjectId,
+    @CurrentUser() currentUser: IJwtPayload,
+  ) {
+    const order = await this.orderService.findOneBy({
+      _id: new ObjectId(orderId),
+    });
+    if (!order)
+      throw new HttpException(
+        this.i18nService.t('order.ORDER_NOT_FOUND'),
+        HttpStatus.BAD_REQUEST,
+      );
+
+    if (order.ownerId != currentUser._id)
+      throw new HttpException(
+        this.i18nService.t('order.DONT_PERMISSION_ORDER'),
+        HttpStatus.BAD_REQUEST,
+      );
+
+    return this.orderService.findOneByIdAndUpdateOrder(
+      new ObjectId(orderId),
+      {status: OrderStatus.CANCEL},
+    );
   }
 }
