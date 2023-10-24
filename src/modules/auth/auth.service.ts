@@ -150,6 +150,10 @@ export class AuthService {
     return this.roleModel.findById(id);
   }
 
+  findOneRoles(filter: any): Promise<Role> {
+    return this.roleModel.findOne(filter);
+  }
+  
   createAccountRole(data: CreateAccountRole) {
     return this.accountRoleModel.create(data);
   }

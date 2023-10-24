@@ -19,7 +19,11 @@ export class CustomerService {
     return this.userModel.create(userData);
   }
 
-  findAll(){
-    return this.userModel.find()
+  findAll() {
+    return this.userModel.find();
+  }
+
+  findOneByPhone(phone: string) {
+    return this.userModel.findOne({ phone });
   }
 }

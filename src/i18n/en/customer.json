@@ -1,5 +1,6 @@
 {
   "ERROR": {
-    "CUSTOMER_NOT_EXISTED": "Customer is not exist"
+    "CUSTOMER_NOT_EXISTED": "Customer is not exist",
+    "PHONE_EXISTED": "Phone is existed"
   }
 }

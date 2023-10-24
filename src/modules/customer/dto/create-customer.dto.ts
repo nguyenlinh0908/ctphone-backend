@@ -23,6 +23,10 @@ export class CreateCustomerDto {
   dateOfBirth: Date;
 
   @IsNotEmpty()
+  @IsString()
+  address: string
+
+  @IsNotEmpty()
   @IsEnum(Gender)
   gender: Gender;
 

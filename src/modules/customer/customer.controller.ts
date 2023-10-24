@@ -27,11 +27,6 @@ export class CustomerController {
     private readonly i18nService: I18nService,
   ) {}
 
-  @Post()
-  create(@Body() data: CreateCustomerDto) {
-    return this.userService.create(data);
-  }
-
   @Get('all')
   findAll() {
     return this.userService.findAll();

@@ -1,6 +1,6 @@
 {
-    "ERROR": {
-      "CUSTOMER_NOT_EXISTED": "Người dùng không tồn tại"
-    }
+  "ERROR": {
+    "CUSTOMER_NOT_EXISTED": "Người dùng không tồn tại",
+    "PHONE_EXISTED": "Số điện thoại đã tồn tại"
   }
-  
+}
