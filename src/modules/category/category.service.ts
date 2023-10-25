@@ -47,7 +47,7 @@ export class CategoryService {
   }
 
   findAll() {
-    return this.categoryModel.find();
+    return this.categoryModel.find().sort({ dept: 1 });
   }
 
   findOne(condition: FilterCategoryDto): Promise<Category> {
