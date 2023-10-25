@@ -28,14 +28,14 @@ export class StaffService {
     const staffs = await this.staffModel
       .aggregate()
       .skip(Number(dataOffset.offset))
-      .limit(Number(filter.limit))
+      .limit(Number(filter.limit));
 
     return {
       limit: filter.limit,
       page: filter.page,
       data: staffs,
       totalRecords,
-      totalPages: dataOffset.totalPages
+      totalPages: dataOffset.totalPages,
     };
   }
 

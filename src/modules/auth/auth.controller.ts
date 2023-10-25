@@ -30,6 +30,7 @@ import { CreateCustomerDto } from '../customer/dto';
 import { AccountType } from './enum';
 import { hashString } from 'src/utils/auth';
 import { I18nService } from 'nestjs-i18n';
+import { StaffService } from '../staff/staff.service';
 
 @UseInterceptors(ResTransformInterceptor)
 @Controller('auth')
@@ -37,6 +38,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly customerService: CustomerService,
+    private readonly staffService: StaffService,
     private readonly i18nService: I18nService,
   ) {}
 
@@ -132,7 +134,9 @@ export class AuthController {
   @Roles(RoleType.ADMIN, RoleType.STAFF, RoleType.CUSTOMER)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('profile')
-  profile(@CurrentUser() currentUser: IJwtPayload) {
-    return this.authService.findById(currentUser._id.toString());
+  async profile(@CurrentUser() currentUser: IJwtPayload) {
+    if (currentUser.type == AccountType.CUSTOMER)
+      return this.authService.findByIdPopulateByCustomer(currentUser._id);
+    return this.authService.findByIdPopulateByStaff(currentUser._id);
   }
 }

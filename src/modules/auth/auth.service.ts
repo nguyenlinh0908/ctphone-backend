@@ -31,6 +31,8 @@ import * as _ from 'lodash';
 import { I18nService } from 'nestjs-i18n';
 import { RedisCachingService } from 'src/shared/modules/redis-cache/redis-caching.service';
 import { ObjectId } from 'mongodb';
+import { Customer } from '../customer/model';
+import { Staff } from '../staff/model';
 
 @Injectable()
 export class AuthService {
@@ -153,7 +155,7 @@ export class AuthService {
   findOneRoles(filter: any): Promise<Role> {
     return this.roleModel.findOne(filter);
   }
-  
+
   createAccountRole(data: CreateAccountRole) {
     return this.accountRoleModel.create(data);
   }
@@ -229,5 +231,13 @@ export class AuthService {
 
   async isAccessTokenLoggedOut(accessToken: string): Promise<boolean> {
     return !!(await this.redisCachingService.get(accessToken));
+  }
+
+  findByIdPopulateByCustomer(id: Types.ObjectId) {
+    return this.accountModel.findById(id).populate('userId', '', Customer.name).select("-password");
+  }
+
+  findByIdPopulateByStaff(id: Types.ObjectId) {
+    return this.accountModel.findById(id).populate('userId', '', Staff.name).select("-password");
   }
 }
