@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConsoleLogger, Injectable } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -15,7 +15,7 @@ export class CategoryService {
   ) {}
 
   async create(createCategoryDto: CreateCategoryDto) {
-    const parent = await this.findOne({ _id: createCategoryDto.parentId });
+    const parent = await this.findById(createCategoryDto.parentId);
     if (parent) {
       await this.categoryModel.updateMany(
         { right: { $gte: parent.right } },
@@ -27,13 +27,12 @@ export class CategoryService {
         { $inc: { left: 2 } },
       );
     }
-
     return this.categoryModel.create({
       ...createCategoryDto,
       parentId: new ObjectId(createCategoryDto.parentId),
       left: parent?.right || 1,
       right: parent?.right ? parent.right + 1 : 2,
-      dept: parent?.dept ? parent.dept + 1 : 0,
+      dept: parent.dept >= 0 ? ++parent.dept : 0,
     });
   }
 
@@ -52,6 +51,10 @@ export class CategoryService {
 
   findOne(condition: FilterCategoryDto): Promise<Category> {
     return this.categoryModel.findOne(condition);
+  }
+
+  findById(id: Types.ObjectId) {
+    return this.categoryModel.findById(id);
   }
 
   update(id: number, updateCategoryDto: UpdateCategoryDto) {
