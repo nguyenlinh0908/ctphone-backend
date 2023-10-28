@@ -7,13 +7,7 @@ export class CreateWarehouseReceiptDto {
 
   delivererName: string;
 
-  inputDate: Date;
-
-  status: WarehouseReceiptStatus = WarehouseReceiptStatus.PENDING;
-
-  totalQuantity: number;
-
-  totalAmount: number;
+  deliveryDate: Date;
 
   products: CreateWarehouseReceiptDetail[];
 }

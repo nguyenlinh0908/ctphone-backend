@@ -5,11 +5,7 @@ export class CreateWarehouseReceiptDetail {
 
   warehouseReceiptId?: Types.ObjectId;
 
-  unit: string;
-
   quantity: number;
-
-  amountUnit: number;
 
   amount: number;
 }

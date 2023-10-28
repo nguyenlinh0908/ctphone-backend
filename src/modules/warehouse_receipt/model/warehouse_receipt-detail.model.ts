@@ -11,14 +11,8 @@ export class WarehouseReceiptDetail {
   @Prop({ type: Types.ObjectId })
   warehouseReceiptId: Types.ObjectId;
 
-  @Prop({ type: String })
-  unit: string;
-
   @Prop({ type: Number })
   quantity: number;
-
-  @Prop({ type: Number })
-  amountUnit: number;
 
   @Prop({ type: Number })
   amount: number;

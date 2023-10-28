@@ -11,6 +11,7 @@ import {
 import { Connection, Model, Types } from 'mongoose';
 import { transaction } from 'src/utils/data';
 import { ObjectId } from 'mongodb';
+import { Product } from '../product/models';
 
 @Injectable()
 export class WarehouseReceiptService {
@@ -26,6 +27,14 @@ export class WarehouseReceiptService {
     return transaction(this.connection, async (session) => {
       const warehouseReceiptCreated = await this.warehouseReceiptModel.create({
         ...createWarehouseReceiptDto,
+        totalQuantity: createWarehouseReceiptDto.products.reduce(
+          (quantity, produce) => quantity + produce.quantity,
+          0,
+        ),
+        totalAmount: createWarehouseReceiptDto.products.reduce(
+          (quantity, produce) => quantity + produce.amount,
+          0,
+        ),
         accountId: new ObjectId(createWarehouseReceiptDto.accountId),
       });
 
@@ -39,6 +48,7 @@ export class WarehouseReceiptService {
           insertOne: {
             document: {
               ...product,
+              productId: new ObjectId(product.productId),
               warehouseReceiptId: new ObjectId(warehouseReceiptCreated._id),
             },
           },
@@ -53,7 +63,13 @@ export class WarehouseReceiptService {
   }
 
   findAll() {
-    return `This action returns all warehouseReceipt`;
+    return this.warehouseReceiptModel.find();
+  }
+
+  findProductsByWarehouseReceiptId(warehouseReceiptId: Types.ObjectId) {
+    return this.warehouseReceiptDetailModel
+      .find({ warehouseReceiptId: new ObjectId(warehouseReceiptId) })
+      .populate('productId', '', Product.name);
   }
 
   findOne(id: number) {
