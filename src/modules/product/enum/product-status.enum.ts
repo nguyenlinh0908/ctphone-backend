@@ -1,5 +1,0 @@
-export enum ProductStatus {
-  AVAILABLE = 'AVAILABLE',
-  STOP_BUSINESS = 'STOP_BUSINESS',
-  OUT_STOCK = 'OUT_STOCK',
-}

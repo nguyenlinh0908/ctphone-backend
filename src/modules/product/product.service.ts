@@ -10,6 +10,7 @@ import { calculateOffset } from 'src/utils/data';
 import { CategoryService } from '../category/category.service';
 import * as _ from 'lodash';
 import { ObjectId } from 'mongodb';
+import { Category } from '../category/models';
 
 @Injectable()
 export class ProductService {
@@ -25,7 +26,7 @@ export class ProductService {
   }
 
   findAll() {
-    return this.productModel.find();
+    return this.productModel.find().populate('categoryId', '', Category.name);
   }
 
   findOne(id: string) {
@@ -40,6 +41,10 @@ export class ProductService {
     return `This action updates a #${id} product`;
   }
 
+  updateStatus(id: Types.ObjectId, enable: boolean) {
+    return this.productModel.findByIdAndUpdate(id, { enable }, { new: true });
+  }
+
   find(filter: FilterProduct) {
     const offset = calculateOffset(
       0,
@@ -52,9 +57,9 @@ export class ProductService {
     delete filter.page;
     const condition = filter;
     return this.productModel
-      .aggregate()
-      .match(condition)
-      .limit(Number(limit))
-      .skip(offset.offset);
+      .find(condition)
+      .populate('categoryId', '', Category.name)
+      .skip(offset.offset)
+      .limit(Number(limit));
   }
 }

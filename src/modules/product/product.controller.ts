@@ -19,6 +19,7 @@ import { FilterProduct } from './dto/filter-product.dto';
 import { PaginateFilter } from 'src/shared/model/paginate-filter.model';
 import { ResTransformInterceptor } from 'src/shared/interceptor';
 import { ObjectId } from 'mongodb';
+import { Types } from 'mongoose';
 
 @UseInterceptors(ResTransformInterceptor)
 @Controller('product')
@@ -46,7 +47,7 @@ export class ProductController {
 
   @Get()
   find(@Query() filter: FilterProduct) {
-    if(filter.categoryId) filter.categoryId = new ObjectId(filter.categoryId)
+    if (filter.categoryId) filter.categoryId = new ObjectId(filter.categoryId);
     return this.productService.find(filter);
   }
 
@@ -55,5 +56,15 @@ export class ProductController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
     return this.productService.update(+id, updateProductDto);
+  }
+
+  @Roles(RoleType.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Patch(':id/status')
+  changeStatus(
+    @Param('id') id: Types.ObjectId,
+    @Body('status') enable: boolean,
+  ) {
+    return this.productService.updateStatus(id, enable);
   }
 }

@@ -1,14 +1,12 @@
-import { Types } from 'mongoose';
-import { ProductStatus } from '../enum';
 import {
   IsEmpty,
-  IsEnum,
   IsMongoId,
   IsNotEmpty,
   IsNumber,
   IsOptional,
-  IsString,
+  IsString
 } from 'class-validator';
+import { Types } from 'mongoose';
 
 export class CreateProductDto {
   @IsNotEmpty()
@@ -47,10 +45,6 @@ export class CreateProductDto {
   @IsString()
   @IsNotEmpty()
   romUnit: string;
-
-  @IsNotEmpty()
-  @IsEnum(ProductStatus)
-  status: ProductStatus = ProductStatus.OUT_STOCK;
 
   @IsNumber()
   @IsNotEmpty()
