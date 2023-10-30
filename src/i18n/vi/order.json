@@ -3,6 +3,7 @@
     "ORDER_NOT_FOUND": "Đơn hàng không tồn tại",
     "ORDER_STATUS_INVALID": "Trạng thái đơn hàng không hợp lệ",
     "ORDER_BELOW_LEVEL": "Không thể thay đổi trạng thái sang level thấp hơn",
-    "DONT_PERMISSION_ORDER": "Bạn không có quyền với đơn hàng này"
+    "DONT_PERMISSION_ORDER": "Bạn không có quyền với đơn hàng này",
+    "PRODUCT_DONT_ENOUGHT_QUANTITY": "Sản phẩm không đủ số lượng khả dụng"
   }
 }

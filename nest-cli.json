@@ -2,10 +2,20 @@
   "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
+  "projects": {
+    "caching": {
+      "type": "library",
+      "root": "src/libs/caching",
+      "entryFile": "index",
+      "sourceRoot": "src/libs/caching/src",
+      "compilerOptions": {
+        "tsConfigPath": "src/libs/caching/tsconfig.lib.json"
+      }
+    }
+  },
   "compilerOptions": {
     "deleteOutDir": true,
-    "assets": [
-      { "include": "i18n/**/*", "watchAssets": true }
-    ]
+    "webpack": true,
+    "assets": [{ "include": "i18n/**/*", "watchAssets": true }]
   }
 }

@@ -14,6 +14,8 @@ import { ObjectId } from 'mongodb';
 import { Product } from '../product/models';
 import { WarehouseReceiptStatus } from './enum';
 import { UpdateWarehouseReceiptStatusDto } from './dto';
+import * as _ from 'lodash';
+import { CachingService, PRODUCT_QUANTITY_PREFIX } from 'src/libs/caching/src';
 
 @Injectable()
 export class WarehouseReceiptService {
@@ -23,6 +25,7 @@ export class WarehouseReceiptService {
     @InjectModel(WarehouseReceiptDetail.name)
     private warehouseReceiptDetailModel: Model<WarehouseReceiptDetailDocument>,
     @InjectConnection() private connection: Connection,
+    private cachingService: CachingService,
   ) {}
 
   async create(createWarehouseReceiptDto: CreateWarehouseReceiptDto) {
@@ -130,5 +133,34 @@ export class WarehouseReceiptService {
 
   remove(id: number) {
     return `This action removes a #${id} warehouseReceipt`;
+  }
+
+  async productQuantityByProductId(productId: Types.ObjectId) {
+    const cachingQuantity = await this.cachingService.getProductQuantity(
+      productId.toString(),
+    );
+    if (cachingQuantity) return cachingQuantity;
+
+    const successWarehouseReceipts = await this.warehouseReceiptModel.find({
+      status: WarehouseReceiptStatus.SUCCESS,
+    });
+
+    const warehouseReceiptIds = _.map(successWarehouseReceipts, (i) => i._id);
+    const productIdAndQuantity = await this.warehouseReceiptDetailModel
+      .aggregate()
+      .match({
+        warehouseReceiptId: { $in: warehouseReceiptIds },
+        productId: new ObjectId(productId),
+      })
+      .group({ _id: '$productId', quantity: { $sum: '$quantity' } });
+    if (productIdAndQuantity.length > 0) {
+      const x = await this.cachingService.setProductQuantity(
+        productIdAndQuantity[0]._id,
+        productIdAndQuantity[0].quantity,
+      );
+      return productIdAndQuantity[0].quantity;
+    }
+
+    return 0;
   }
 }

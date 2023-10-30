@@ -12,17 +12,17 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { Types } from 'mongoose';
+import { I18nService } from 'nestjs-i18n';
 import { ResTransformInterceptor } from 'src/shared/interceptor';
 import { CurrentUser, Roles } from '../auth/decorator';
 import { RoleType } from '../auth/enum';
 import { JwtAuthGuard, RolesGuard } from '../auth/guard';
 import { IJwtPayload } from '../auth/interface';
+import { UpdateWarehouseReceiptStatusDto } from './dto';
 import { CreateWarehouseReceiptDto } from './dto/create-warehouse_receipt.dto';
 import { UpdateWarehouseReceiptDto } from './dto/update-warehouse_receipt.dto';
-import { WarehouseReceiptService } from './warehouse_receipt.service';
-import { UpdateWarehouseReceiptStatusDto } from './dto';
 import { WarehouseReceiptStatus } from './enum';
-import { I18nService } from 'nestjs-i18n';
+import { WarehouseReceiptService } from './warehouse_receipt.service';
 
 @UseInterceptors(ResTransformInterceptor)
 @Controller('warehouse-receipt')

@@ -3,6 +3,7 @@
     "ORDER_NOT_FOUND": "order is not found",
     "ORDER_STATUS_INVALID": "order status invalid",
     "ORDER_BELOW_LEVEL": "Can't update order status below level",
-    "DONT_PERMISSION_ORDER": "You don't have permission with order"
+    "DONT_PERMISSION_ORDER": "You don't have permission with order",
+    "PRODUCT_DONT_ENOUGHT_QUANTITY": "Product doesn't enough quantity"
   }
 }

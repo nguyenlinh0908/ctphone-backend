@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
-import { OrderService } from './order.service';
-import { OrderController } from './order.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Order, OrderDetail, OrderDetailSchema, OrderSchema } from './model';
 import { ProductModule } from '../product/product.module';
+import { WarehouseReceiptModule } from '../warehouse_receipt/warehouse_receipt.module';
+import { Order, OrderDetail, OrderDetailSchema, OrderSchema } from './model';
+import { OrderController } from './order.controller';
+import { OrderService } from './order.service';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { ProductModule } from '../product/product.module';
       { name: OrderDetail.name, schema: OrderDetailSchema },
     ]),
     ProductModule,
+    WarehouseReceiptModule
   ],
   controllers: [OrderController],
   providers: [OrderService],

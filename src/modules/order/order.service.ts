@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as _ from 'lodash';
 import { ObjectId } from 'mongodb';
@@ -19,6 +19,8 @@ import {
   OrderDocument,
 } from './model';
 import { Account } from '../auth/model';
+import { WarehouseReceiptService } from '../warehouse_receipt/warehouse_receipt.service';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class OrderService {
@@ -34,6 +36,8 @@ export class OrderService {
     @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
     @InjectModel(OrderDetail.name)
     private orderDetailModel: Model<OrderDetailDocument>,
+    private warehouseReceiptService: WarehouseReceiptService,
+    private i18nService: I18nService,
   ) {}
 
   createOrder(createOrderDto: CreateOrderDto) {
@@ -66,7 +70,8 @@ export class OrderService {
     return this.orderModel
       .findById(orderId)
       .populate('ownerId', '-password', Account.name)
-      .populate('merchandiserId', '-password', Account.name).exec();
+      .populate('merchandiserId', '-password', Account.name)
+      .exec();
   }
 
   findOneOrderDetail(filter: FilterOrderDetailDto): Promise<OrderDetail> {
@@ -113,6 +118,26 @@ export class OrderService {
   ) {
     switch (updateCartDto.action) {
       case CartAction.ADD:
+        let checkingOrderDetail = await this.findOneOrderDetail({
+          orderId: cart._id,
+          productId: new ObjectId(updateCartDto.productId),
+        });
+        console.log('checkingOrderDetail :>> ', checkingOrderDetail);
+        const inventoryProductQuantity =
+          await this.warehouseReceiptService.productQuantityByProductId(
+            new ObjectId(updateCartDto.productId),
+          );
+          console.log('object :>> ', inventoryProductQuantity);
+        const checkingQuantity = checkingOrderDetail
+          ? ++checkingOrderDetail.quantity
+          : 1;
+
+        if (checkingQuantity > inventoryProductQuantity)
+          throw new HttpException(
+            this.i18nService.t('order.ERROR.PRODUCT_DONT_ENOUGHT_QUANTITY'),
+            HttpStatus.BAD_REQUEST,
+          );
+
         await this.findOneAndUpdateUpsertOrderDetail(
           {
             orderId: cart._id,

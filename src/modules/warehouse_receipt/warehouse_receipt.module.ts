@@ -8,6 +8,7 @@ import {
   WarehouseReceiptDetailSchema,
   WarehouseReceiptSchema,
 } from './model';
+import { CachingModule } from 'src/libs/caching/src';
 
 @Module({
   imports: [
@@ -18,8 +19,10 @@ import {
         schema: WarehouseReceiptDetailSchema,
       },
     ]),
+    CachingModule
   ],
   controllers: [WarehouseReceiptController],
   providers: [WarehouseReceiptService],
+  exports:[WarehouseReceiptService]
 })
 export class WarehouseReceiptModule {}
