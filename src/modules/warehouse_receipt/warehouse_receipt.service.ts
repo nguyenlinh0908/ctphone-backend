@@ -12,6 +12,8 @@ import { Connection, Model, Types } from 'mongoose';
 import { transaction } from 'src/utils/data';
 import { ObjectId } from 'mongodb';
 import { Product } from '../product/models';
+import { WarehouseReceiptStatus } from './enum';
+import { UpdateWarehouseReceiptStatusDto } from './dto';
 
 @Injectable()
 export class WarehouseReceiptService {
@@ -76,6 +78,10 @@ export class WarehouseReceiptService {
     return `This action returns a #${id} warehouseReceipt`;
   }
 
+  findOneById(id: Types.ObjectId) {
+    return this.warehouseReceiptModel.findById(id);
+  }
+
   async update(
     id: string,
     updateWarehouseReceiptDto: UpdateWarehouseReceiptDto,
@@ -108,6 +114,17 @@ export class WarehouseReceiptService {
 
     this.warehouseReceiptDetailModel.bulkWrite(
       bulkWriteWarehouseReceiptDetails,
+    );
+  }
+
+  findByIdAndUpdateStatus(
+    warehouseReceiptId: Types.ObjectId,
+    data: UpdateWarehouseReceiptStatusDto,
+  ) {
+    return this.warehouseReceiptModel.findByIdAndUpdate(
+      warehouseReceiptId,
+      { status: data.status },
+      { new: true },
     );
   }
 

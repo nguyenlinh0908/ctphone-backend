@@ -10,8 +10,8 @@ export class WarehouseReceipt {
   @Prop({ type: String })
   delivererName: string;
 
-  @Prop({ type: String })
-  deliveryDate: string;
+  @Prop({ type: Date })
+  deliveryDate: Date;
 
   @Prop({
     type: String,
