@@ -30,11 +30,16 @@ export interface IVnpay {
   URL_RETURN: string;
 }
 
+export interface IUpload {
+  MULTER_DEST: string;
+}
+
 export interface IAppConfig {
   database: IDatabase;
   jwt: IJWT;
   redis: IRedis;
   vnpay: IVnpay;
+  upload: IUpload;
 }
 
 const env: IAppConfig = {
@@ -56,6 +61,9 @@ const env: IAppConfig = {
     SECURE_HASH: envConfig.VNPAY_SECURE_HASH,
     URL: envConfig.VNPAY_URL,
     URL_RETURN: envConfig.VNPAY_URL_RETURN,
+  },
+  upload: {
+    MULTER_DEST: envConfig.MULTER_DEST,
   },
 };
 
@@ -80,6 +88,9 @@ export const validationSchema = Joi.object({
     SECURE_HASH: Joi.string().required(),
     URL: Joi.string().required(),
     URL_RETURN: Joi.string().required(),
+  },
+  upload: {
+    MULTER_DEST: Joi.string().required(),
   },
 });
 

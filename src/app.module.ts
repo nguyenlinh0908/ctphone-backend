@@ -15,6 +15,7 @@ import { ProductModule } from './modules/product/product.module';
 import { WarehouseReceiptModule } from './modules/warehouse_receipt/warehouse_receipt.module';
 import { OrderModule } from './modules/order/order.module';
 import { PaymentModule } from './modules/payment/payment.module';
+import { UploadModule } from './modules/upload/upload.module';
 
 @Module({
   imports: [
@@ -41,7 +42,8 @@ import { PaymentModule } from './modules/payment/payment.module';
     ProductModule,
     WarehouseReceiptModule,
     OrderModule,
-    PaymentModule
+    PaymentModule,
+    UploadModule
   ],
   controllers: [AppController],
   providers: [
