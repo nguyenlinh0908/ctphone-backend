@@ -27,9 +27,10 @@ export class UploadController {
     @UploadedFile()
     file: Express.Multer.File,
   ) {
+    const typeFileArr = file.mimetype.split("/")
     const data: CreateMediaDto = {
-      url: file.path,
-      type: file.mimetype == 'image/jpeg' ? MediaType.PHOTO : MediaType.VIDEO,
+      url: file.path.replace("public", ""),
+      type: typeFileArr[0] == "image" ? MediaType.PHOTO : MediaType.VIDEO,
     };
     return this.uploadService.create(data);
   }

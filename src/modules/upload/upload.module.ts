@@ -37,5 +37,6 @@ import { Media, MediaSchema } from './models/upload.model';
   ],
   controllers: [UploadController],
   providers: [UploadService],
+  exports: [UploadService],
 })
 export class UploadModule {}

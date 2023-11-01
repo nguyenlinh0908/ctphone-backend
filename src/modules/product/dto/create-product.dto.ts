@@ -4,7 +4,7 @@ import {
   IsNotEmpty,
   IsNumber,
   IsOptional,
-  IsString
+  IsString,
 } from 'class-validator';
 import { Types } from 'mongoose';
 
@@ -53,4 +53,6 @@ export class CreateProductDto {
   @IsMongoId()
   @IsNotEmpty()
   categoryId: Types.ObjectId;
+
+  mediaIds: Types.ObjectId[];
 }

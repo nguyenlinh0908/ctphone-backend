@@ -1,36 +1,49 @@
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Body,
-  Patch,
   Param,
-  UseGuards,
+  Patch,
+  Post,
   Query,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { ProductService } from './product.service';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
-import { RoleType } from '../auth/enum';
-import { Roles } from '../auth/decorator';
-import { JwtAuthGuard, RolesGuard } from '../auth/guard';
-import { FilterProduct } from './dto/filter-product.dto';
-import { PaginateFilter } from 'src/shared/model/paginate-filter.model';
-import { ResTransformInterceptor } from 'src/shared/interceptor';
 import { ObjectId } from 'mongodb';
 import { Types } from 'mongoose';
+import { ResTransformInterceptor } from 'src/shared/interceptor';
+import { Roles } from '../auth/decorator';
+import { RoleType } from '../auth/enum';
+import { JwtAuthGuard, RolesGuard } from '../auth/guard';
+import { UploadService } from '../upload/upload.service';
+import { CreateProductDto } from './dto/create-product.dto';
+import { FilterProduct } from './dto/filter-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
+import { ProductService } from './product.service';
+import * as _ from 'lodash';
 
 @UseInterceptors(ResTransformInterceptor)
 @Controller('product')
 export class ProductController {
-  constructor(private readonly productService: ProductService) {}
+  constructor(
+    private readonly productService: ProductService,
+    private readonly mediaService: UploadService,
+  ) {}
 
   @Roles(RoleType.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post()
-  create(@Body() createProductDto: CreateProductDto) {
-    return this.productService.create(createProductDto);
+  async create(@Body() createProductDto: CreateProductDto) {
+    const product = await this.productService.create(createProductDto);
+    const mediaMongoIds = _.map(
+      createProductDto.mediaIds,
+      (item) => new ObjectId(item),
+    );
+    await this.mediaService.updateMultipleByIds({
+      mediaIds: mediaMongoIds,
+      ownerId: product._id,
+    });
+    return product;
   }
 
   @Roles(RoleType.ADMIN)

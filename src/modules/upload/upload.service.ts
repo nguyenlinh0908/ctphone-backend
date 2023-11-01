@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { CreateMediaDto } from './dto';
+import { CreateMediaDto, UpdateMediaDto } from './dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Media, MediaDocument } from './models/upload.model';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 
 @Injectable()
 export class UploadService {
@@ -11,5 +11,12 @@ export class UploadService {
   ) {}
   create(data: CreateMediaDto) {
     return this.mediaModel.create(data);
+  }
+
+  updateMultipleByIds(data: UpdateMediaDto) {
+    const ids = data.mediaIds;
+    delete data.mediaIds;
+
+    return this.mediaModel.updateMany({ _id: { $in: ids } }, { $set: data });
   }
 }

@@ -26,11 +26,44 @@ export class ProductService {
   }
 
   findAll() {
-    return this.productModel.find().populate('categoryId', '', Category.name);
+    return this.productModel.aggregate([
+      {
+        $lookup: {
+          from: 'media',
+          localField: '_id',
+          foreignField: 'ownerId',
+          as: 'media',
+        },
+      },
+      {
+        $lookup: {
+          from: 'categories',
+          localField: 'categoryId',
+          foreignField: '_id',
+          as: 'categories',
+        },
+      },
+      {
+        $addFields: {
+          categoryId: {
+            $first: '$categories',
+          },
+        },
+      },
+    ]);
   }
 
-  findOne(id: string) {
-    return this.productModel.findById(id);
+  async findOne(id: string) {
+    const [data] = await this.productModel
+      .aggregate()
+      .match({ _id: new ObjectId(id) })
+      .lookup({
+        from: 'media',
+        localField: '_id',
+        foreignField: 'ownerId',
+        as: 'media',
+      });
+    return data;
   }
 
   findById(id: Types.ObjectId): Promise<Product> {
@@ -57,8 +90,25 @@ export class ProductService {
     delete filter.page;
     const condition = filter;
     return this.productModel
-      .find(condition)
-      .populate('categoryId', '', Category.name)
+      .aggregate()
+      .match(condition)
+      .lookup({
+        from: 'media',
+        localField: '_id',
+        foreignField: 'ownerId',
+        as: 'media',
+      })
+      .lookup({
+        from: 'categories',
+        localField: 'categoryId',
+        foreignField: '_id',
+        as: 'categories',
+      })
+      .addFields({
+        categoryId: {
+          $first: '$categories',
+        },
+      })
       .skip(offset.offset)
       .limit(Number(limit));
   }
