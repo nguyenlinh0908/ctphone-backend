@@ -6,4 +6,8 @@ export class FilterCategoryDto {
   dept?: number;
 
   parentId?: Types.ObjectId;
+  
+  left?: any;
+
+  right?: any;
 }

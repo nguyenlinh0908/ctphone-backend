@@ -60,7 +60,6 @@ export class ProductController {
 
   @Get()
   find(@Query() filter: FilterProduct) {
-    if (filter.categoryId) filter.categoryId = new ObjectId(filter.categoryId);
     return this.productService.find(filter);
   }
 

@@ -13,8 +13,6 @@ export const calculateOffset = (
   };
 };
 
-
-
 export const transaction = async <T>(connection: Connection, cb: (session: ClientSession) => Promise<T>): Promise<T> => {
   const session = await connection.startSession();
 

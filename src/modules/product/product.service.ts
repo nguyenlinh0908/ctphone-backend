@@ -1,16 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Product, ProductDocument } from './models';
-import { Model, Types } from 'mongoose';
-import { FilterProduct } from './dto/filter-product.dto';
-import { PaginateFilter } from 'src/shared/model/paginate-filter.model';
-import { calculateOffset } from 'src/utils/data';
-import { CategoryService } from '../category/category.service';
 import * as _ from 'lodash';
 import { ObjectId } from 'mongodb';
-import { Category } from '../category/models';
+import { Model, Types } from 'mongoose';
+import { PaginateRes } from 'src/shared/model/paginate-res.model';
+import { calculateOffset } from 'src/utils/data';
+import { CategoryService } from '../category/category.service';
+import { CreateProductDto } from './dto/create-product.dto';
+import { FilterProduct } from './dto/filter-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
+import { Product, ProductDocument } from './models';
 
 @Injectable()
 export class ProductService {
@@ -78,18 +77,44 @@ export class ProductService {
     return this.productModel.findByIdAndUpdate(id, { enable }, { new: true });
   }
 
-  find(filter: FilterProduct) {
-    const offset = calculateOffset(
-      0,
-      Number(filter.limit),
-      Number(filter.page),
-    );
-
+  async find(filter: FilterProduct): Promise<PaginateRes<Product>> {
     const limit = filter.limit;
+    const page = filter.page
     delete filter.limit;
     delete filter.page;
-    const condition = filter;
-    return this.productModel
+    let condition: any = filter;
+
+    if (filter.categoryId) {
+      const category = await this.categoryService.findById(filter.categoryId);
+
+      const categoryChildren = await this.categoryService.find({
+        left: { $gt: category.left },
+        right: { $lt: category.right },
+      });
+
+      const categoryIds = _.map(categoryChildren, (i) => new ObjectId(i._id));
+      condition.categoryId = {
+        $in: [...categoryIds, new ObjectId(category._id)],
+      };
+    }
+
+    let orderBy = {};
+    if (filter.order) {
+      orderBy[filter.order] = filter.dir;
+      delete filter.order;
+      delete filter.dir;
+    }else{
+      orderBy["price"] = "desc"
+    }
+
+    const totalProducts = await this.productModel.countDocuments(condition);
+    const offset = calculateOffset(
+      totalProducts,
+      Number(limit),
+      Number(page),
+    );
+
+    const result = await this.productModel
       .aggregate()
       .match(condition)
       .lookup({
@@ -109,7 +134,15 @@ export class ProductService {
           $first: '$categories',
         },
       })
+      .sort(orderBy)
       .skip(offset.offset)
       .limit(Number(limit));
+    return {
+      data: result,
+      totalPages: offset.totalPages,
+      limit: limit,
+      page: page,
+      totalRecords: totalProducts,
+    };
   }
 }
