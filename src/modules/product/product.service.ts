@@ -79,7 +79,7 @@ export class ProductService {
 
   async find(filter: FilterProduct): Promise<PaginateRes<Product>> {
     const limit = filter.limit;
-    const page = filter.page
+    const page = filter.page;
     delete filter.limit;
     delete filter.page;
     let condition: any = filter;
@@ -103,16 +103,16 @@ export class ProductService {
       orderBy[filter.order] = filter.dir;
       delete filter.order;
       delete filter.dir;
-    }else{
-      orderBy["price"] = "desc"
+    } else {
+      orderBy['price'] = 'desc';
+    }
+
+    if (filter.name) {
+      condition.name = { $regex: '.*' + filter.name + '.*', $options: 'i' };
     }
 
     const totalProducts = await this.productModel.countDocuments(condition);
-    const offset = calculateOffset(
-      totalProducts,
-      Number(limit),
-      Number(page),
-    );
+    const offset = calculateOffset(totalProducts, Number(limit), Number(page));
 
     const result = await this.productModel
       .aggregate()
