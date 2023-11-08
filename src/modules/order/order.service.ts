@@ -122,12 +122,10 @@ export class OrderService {
           orderId: cart._id,
           productId: new ObjectId(updateCartDto.productId),
         });
-        console.log('checkingOrderDetail :>> ', checkingOrderDetail);
         const inventoryProductQuantity =
           await this.warehouseReceiptService.productQuantityByProductId(
             new ObjectId(updateCartDto.productId),
           );
-          console.log('object :>> ', inventoryProductQuantity);
         const checkingQuantity = checkingOrderDetail
           ? ++checkingOrderDetail.quantity
           : 1;

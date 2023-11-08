@@ -203,14 +203,35 @@ export class OrderController {
     if (updateOrderStatusDto.status == OrderStatus.SUCCESS)
       updateOrderStatusDto.paymentStatus = PaymentStatus.SUCCESS;
 
-    return this.orderService.findOneByIdAndUpdateOrder(orderId, {
-      status: updateOrderStatusDto.status,
-      merchandiserId: currentUser._id,
-      paymentStatus:
-        updateOrderStatusDto.paymentStatus && OrderStatus.SUCCESS
-          ? updateOrderStatusDto.paymentStatus
-          : order.paymentStatus,
-    });
+    const updatedOrder = await this.orderService.findOneByIdAndUpdateOrder(
+      orderId,
+      {
+        status: updateOrderStatusDto.status,
+        merchandiserId: currentUser._id,
+        paymentStatus:
+          updateOrderStatusDto.paymentStatus && OrderStatus.SUCCESS
+            ? updateOrderStatusDto.paymentStatus
+            : order.paymentStatus,
+      },
+    );
+    let bulkWrite = [];
+    if (updatedOrder.status == OrderStatus.PREPARES_PACKAGE) {
+      const orderDetails = await this.orderService.findOrderDetail({
+        orderId: updatedOrder._id,
+      });
+      bulkWrite = orderDetails.map((i) => {
+        return {
+          updateOne: {
+            filter: { _id: new ObjectId(i.productId) },
+            update: {
+              $inc: { quantity: -i.quantity },
+            },
+          },
+        };
+      });
+      await this.productService.bulkWrite(bulkWrite);
+    }
+    return updatedOrder;
   }
 
   @Roles(RoleType.ADMIN, RoleType.STAFF, RoleType.CUSTOMER)

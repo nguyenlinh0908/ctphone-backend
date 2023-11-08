@@ -9,6 +9,7 @@ import {
   WarehouseReceiptSchema,
 } from './model';
 import { CachingModule } from 'src/libs/caching/src';
+import { ProductModule } from '../product/product.module';
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { CachingModule } from 'src/libs/caching/src';
         schema: WarehouseReceiptDetailSchema,
       },
     ]),
-    CachingModule
+    CachingModule,
+    ProductModule
   ],
   controllers: [WarehouseReceiptController],
   providers: [WarehouseReceiptService],

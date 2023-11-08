@@ -40,6 +40,9 @@ export class Product {
 
   @Prop({ type: Types.ObjectId })
   categoryId: Types.ObjectId;
+
+  @Prop({ type: Number, default: 0 })
+  quantity: number;
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);

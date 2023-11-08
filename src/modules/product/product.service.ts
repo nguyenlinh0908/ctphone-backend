@@ -145,4 +145,8 @@ export class ProductService {
       totalRecords: totalProducts,
     };
   }
+
+  bulkWrite(bulkWrite: any) {
+    return this.productModel.bulkWrite(bulkWrite);
+  }
 }

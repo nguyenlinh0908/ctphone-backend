@@ -16,6 +16,7 @@ import { WarehouseReceiptStatus } from './enum';
 import { UpdateWarehouseReceiptStatusDto } from './dto';
 import * as _ from 'lodash';
 import { CachingService, PRODUCT_QUANTITY_PREFIX } from 'src/libs/caching/src';
+import { ProductService } from '../product/product.service';
 
 @Injectable()
 export class WarehouseReceiptService {
@@ -26,6 +27,7 @@ export class WarehouseReceiptService {
     private warehouseReceiptDetailModel: Model<WarehouseReceiptDetailDocument>,
     @InjectConnection() private connection: Connection,
     private cachingService: CachingService,
+    private productService: ProductService,
   ) {}
 
   async create(createWarehouseReceiptDto: CreateWarehouseReceiptDto) {
@@ -120,15 +122,36 @@ export class WarehouseReceiptService {
     );
   }
 
-  findByIdAndUpdateStatus(
+  async findByIdAndUpdateStatus(
     warehouseReceiptId: Types.ObjectId,
     data: UpdateWarehouseReceiptStatusDto,
   ) {
-    return this.warehouseReceiptModel.findByIdAndUpdate(
+    const result = await this.warehouseReceiptModel.findByIdAndUpdate(
       warehouseReceiptId,
       { status: data.status },
       { new: true },
     );
+    if (data.status == WarehouseReceiptStatus.SUCCESS) {
+      const warehouseDetails = await this.warehouseReceiptDetailModel.find({
+        warehouseReceiptId: new ObjectId(result._id),
+      });
+      let bulkWrite = [];
+      if (warehouseDetails.length > 0) {
+        bulkWrite = warehouseDetails.map((i) => {
+          return {
+            updateOne: {
+              filter: { _id: new ObjectId(i.productId) },
+              update: {
+                $inc: { quantity: i.quantity },
+              },
+            },
+          };
+        });
+
+        console.log(JSON.stringify(bulkWrite));
+        await this.productService.bulkWrite(bulkWrite);
+      }
+    }
   }
 
   remove(id: number) {
