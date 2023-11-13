@@ -34,12 +34,17 @@ export interface IUpload {
   MULTER_DEST: string;
 }
 
+export interface IProductConfig {
+  MINIMUM_PRODUCT_QUANTITY;
+}
+
 export interface IAppConfig {
   database: IDatabase;
   jwt: IJWT;
   redis: IRedis;
   vnpay: IVnpay;
   upload: IUpload;
+  product: IProductConfig;
 }
 
 const env: IAppConfig = {
@@ -64,6 +69,9 @@ const env: IAppConfig = {
   },
   upload: {
     MULTER_DEST: envConfig.MULTER_DEST,
+  },
+  product: {
+    MINIMUM_PRODUCT_QUANTITY: +envConfig.MINIMUM_PRODUCT_QUANTITY,
   },
 };
 
@@ -91,6 +99,9 @@ export const validationSchema = Joi.object({
   },
   upload: {
     MULTER_DEST: Joi.string().required(),
+  },
+  product: {
+    MINIMUM_PRODUCT_QUANTITY: Joi.number(),
   },
 });
 

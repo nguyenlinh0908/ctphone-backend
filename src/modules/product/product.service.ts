@@ -149,4 +149,14 @@ export class ProductService {
   bulkWrite(bulkWrite: any) {
     return this.productModel.bulkWrite(bulkWrite);
   }
+
+  findByIdsWithQuantityLessThenEqual(
+    ids: Types.ObjectId[],
+    minimumQuantity: number,
+  ) {
+    return this.productModel.find({
+      _id: { $in: ids },
+      quantity: { $lte: minimumQuantity },
+    });
+  }
 }
