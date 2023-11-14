@@ -2,7 +2,9 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { OrderEventDto } from './dto';
 import { envConfig } from '@configs/env.config';
 import { ProductService } from '../product/product.service';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class EventListener {
   constructor(private productService: ProductService) {}
 
@@ -13,7 +15,6 @@ export class EventListener {
         payload.productIds,
         +envConfig.MINIMUM_PRODUCT_QUANTITY,
       );
-      console.log(outStockProducts);
     if (outStockProducts.length > 0) {
     }
   }

@@ -32,6 +32,13 @@ export class CustomerController {
     return this.userService.findAll();
   }
 
+  @Get('statistical/quantity')
+  async countDocuments() {
+    return {
+      quantity: await this.userService.countDocuments(),
+    };
+  }
+
   @Roles(RoleType.ADMIN, RoleType.CUSTOMER)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get(':id')

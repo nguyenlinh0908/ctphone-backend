@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Param,
   Patch,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -21,9 +22,16 @@ import { AccountType, RoleType } from '../auth/enum';
 import { JwtAuthGuard, RolesGuard } from '../auth/guard';
 import { IJwtPayload } from '../auth/interface';
 import { ProductService } from '../product/product.service';
-import { CreateOrderDto, UpdateCartDto, UpdateOrderStatusDto } from './dto';
+import {
+  CreateOrderDto,
+  FilterOrderDto,
+  UpdateCartDto,
+  UpdateOrderStatusDto,
+} from './dto';
 import { OrderStatus, PaymentStatus } from './enum';
 import { OrderService } from './order.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { OrderEventDto } from '../event/dto';
 
 @UseInterceptors(ResTransformInterceptor)
 @Controller('order')
@@ -32,6 +40,7 @@ export class OrderController {
     private readonly orderService: OrderService,
     private readonly productService: ProductService,
     private readonly i18nService: I18nService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   @Roles(RoleType.CUSTOMER)
@@ -215,14 +224,17 @@ export class OrderController {
       },
     );
     let bulkWrite = [];
+    let productIds: Types.ObjectId[] = [];
     if (updatedOrder.status == OrderStatus.PREPARES_PACKAGE) {
       const orderDetails = await this.orderService.findOrderDetail({
         orderId: updatedOrder._id,
       });
       bulkWrite = orderDetails.map((i) => {
+        const productId = new ObjectId(i.productId);
+        productIds.push(productId);
         return {
           updateOne: {
-            filter: { _id: new ObjectId(i.productId) },
+            filter: { _id: productId },
             update: {
               $inc: { quantity: -i.quantity },
             },
@@ -230,6 +242,10 @@ export class OrderController {
         };
       });
       await this.productService.bulkWrite(bulkWrite);
+      this.eventEmitter.emit(
+        'order.prepares_package',
+        new OrderEventDto(productIds),
+      );
     }
     return updatedOrder;
   }
@@ -302,5 +318,22 @@ export class OrderController {
     )
       throw new HttpException('auth.UNAUTHORIZED', HttpStatus.BAD_REQUEST);
     return order;
+  }
+
+  @Roles(RoleType.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('statistical/quantity')
+  async quantity(@Query() query: FilterOrderDto) {
+    return {
+      quantity: await this.orderService.countDocuments(query),
+    };
+  }
+
+  @Roles(RoleType.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('statistical/revenue')
+  async revenue() {
+    const [result] = await this.orderService.revenue();
+    return result;
   }
 }

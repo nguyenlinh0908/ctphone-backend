@@ -26,4 +26,8 @@ export class CustomerService {
   findOneByPhone(phone: string) {
     return this.userModel.findOne({ phone });
   }
+
+  countDocuments(){
+    return this.userModel.countDocuments({})
+  }
 }

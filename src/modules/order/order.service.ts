@@ -209,4 +209,26 @@ export class OrderService {
       .find({ ownerId, status: { $ne: OrderStatus.CART } })
       .sort({ createdAt: -1 });
   }
+
+  countDocuments(filter: FilterOrderDto) {
+    return this.orderModel.countDocuments(filter);
+  }
+
+  revenue() {
+    return this.orderModel.aggregate([
+      {
+        $match: {
+          status: 'SUCCESS',
+        },
+      },
+      {
+        $group: {
+          _id: '$status',
+          amount: {
+            $sum: '$totalAmountAfterDiscount',
+          },
+        },
+      },
+    ]);
+  }
 }

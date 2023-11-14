@@ -1,3 +1,9 @@
+import { Types } from 'mongoose';
+
 export class CreateNotificationDto {
-  message: string;
+  userId?: Types.ObjectId;
+
+  title: string;
+
+  content: string;
 }
