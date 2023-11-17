@@ -212,6 +212,29 @@ export class OrderController {
     if (updateOrderStatusDto.status == OrderStatus.SUCCESS)
       updateOrderStatusDto.paymentStatus = PaymentStatus.SUCCESS;
 
+    // check product has enough quantity
+    const orderDetails = await this.orderService.findOrderDetail({
+      orderId: new ObjectId(orderId),
+    });
+    
+    if (updateOrderStatusDto.status == OrderStatus.PREPARES_PACKAGE) {
+      let isProductValid = true;
+      for (const order of orderDetails) {
+        const productChecking = await this.productService.findById(
+          order.productId._id,
+        );
+        if (order.quantity > productChecking.quantity) {
+          isProductValid = false;
+          break;
+        }
+      }
+      if (!isProductValid)
+        throw new HttpException(
+          this.i18nService.t('order.ERROR.PRODUCT_DONT_ENOUGHT_QUANTITY'),
+          HttpStatus.BAD_REQUEST,
+        );
+    }
+
     const updatedOrder = await this.orderService.findOneByIdAndUpdateOrder(
       orderId,
       {
@@ -226,9 +249,6 @@ export class OrderController {
     let bulkWrite = [];
     let productIds: Types.ObjectId[] = [];
     if (updatedOrder.status == OrderStatus.PREPARES_PACKAGE) {
-      const orderDetails = await this.orderService.findOrderDetail({
-        orderId: updatedOrder._id,
-      });
       bulkWrite = orderDetails.map((i) => {
         const productId = new ObjectId(i.productId);
         productIds.push(productId);
@@ -335,5 +355,12 @@ export class OrderController {
   async revenue() {
     const [result] = await this.orderService.revenue();
     return result;
+  }
+
+  @Roles(RoleType.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('statistical/revenue/months')
+  async revenueByMonths() {
+    return this.orderService.revenueByMonths();
   }
 }

@@ -47,16 +47,22 @@ export class WarehouseReceiptController {
     });
   }
 
+  @Roles(RoleType.ADMIN, RoleType.STAFF)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('all')
   findAll() {
     return this.warehouseReceiptService.findAll();
   }
 
+  @Roles(RoleType.ADMIN, RoleType.STAFF)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get(':id/detail')
   findProductsByWarehouseReceiptId(@Param('id') id: Types.ObjectId) {
     return this.warehouseReceiptService.findProductsByWarehouseReceiptId(id);
   }
 
+  @Roles(RoleType.ADMIN, RoleType.STAFF)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Patch(':id/status')
   async updateStatus(
     @Param('id') id: Types.ObjectId,
@@ -71,11 +77,15 @@ export class WarehouseReceiptController {
     return this.warehouseReceiptService.findByIdAndUpdateStatus(id, data);
   }
 
+  @Roles(RoleType.ADMIN, RoleType.STAFF)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.warehouseReceiptService.findOne(+id);
   }
 
+  @Roles(RoleType.ADMIN, RoleType.STAFF)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -84,8 +94,25 @@ export class WarehouseReceiptController {
     return this.warehouseReceiptService.update(id, updateWarehouseReceiptDto);
   }
 
+  @Roles(RoleType.ADMIN, RoleType.STAFF)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.warehouseReceiptService.remove(+id);
+  }
+
+  @Roles(RoleType.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('statistical/cost')
+  async totalCost() {
+    const [result] = await this.warehouseReceiptService.totalCost();
+    return result;
+  }
+
+  @Roles(RoleType.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('statistical/cost/months')
+  warehouseReceiptCostByMonths() {
+    return this.warehouseReceiptService.costByMonths();
   }
 }

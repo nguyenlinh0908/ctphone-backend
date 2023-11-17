@@ -21,6 +21,7 @@ import {
 import { Account } from '../auth/model';
 import { WarehouseReceiptService } from '../warehouse_receipt/warehouse_receipt.service';
 import { I18nService } from 'nestjs-i18n';
+import { ProductService } from '../product/product.service';
 
 @Injectable()
 export class OrderService {
@@ -38,6 +39,7 @@ export class OrderService {
     private orderDetailModel: Model<OrderDetailDocument>,
     private warehouseReceiptService: WarehouseReceiptService,
     private i18nService: I18nService,
+    private productService:ProductService
   ) {}
 
   createOrder(createOrderDto: CreateOrderDto) {
@@ -122,15 +124,12 @@ export class OrderService {
           orderId: cart._id,
           productId: new ObjectId(updateCartDto.productId),
         });
-        const inventoryProductQuantity =
-          await this.warehouseReceiptService.productQuantityByProductId(
-            new ObjectId(updateCartDto.productId),
-          );
+        const productChecking = await this.productService.findById(updateCartDto.productId)
         const checkingQuantity = checkingOrderDetail
           ? ++checkingOrderDetail.quantity
           : 1;
 
-        if (checkingQuantity > inventoryProductQuantity)
+        if (checkingQuantity > productChecking.quantity)
           throw new HttpException(
             this.i18nService.t('order.ERROR.PRODUCT_DONT_ENOUGHT_QUANTITY'),
             HttpStatus.BAD_REQUEST,
@@ -224,6 +223,22 @@ export class OrderService {
       {
         $group: {
           _id: '$status',
+          amount: {
+            $sum: '$totalAmountAfterDiscount',
+          },
+        },
+      },
+    ]);
+  }
+
+  revenueByMonths() {
+    return this.orderModel.aggregate([
+      {
+        $group: {
+          _id: {
+            $month: '$createdAt',
+          },
+          month: { $first: { $month: '$createdAt' } },
           amount: {
             $sum: '$totalAmountAfterDiscount',
           },

@@ -5,7 +5,7 @@ import { Account } from 'src/modules/auth/model';
 
 export type WarehouseReceiptDocument = WarehouseReceipt & Document;
 
-@Schema({ collection: 'warehouseReceipts' })
+@Schema({ collection: 'warehouseReceipts', timestamps: true })
 export class WarehouseReceipt {
   @Prop({ type: String })
   delivererName: string;

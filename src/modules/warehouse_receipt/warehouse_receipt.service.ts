@@ -148,7 +148,6 @@ export class WarehouseReceiptService {
           };
         });
 
-        console.log(JSON.stringify(bulkWrite));
         await this.productService.bulkWrite(bulkWrite);
       }
     }
@@ -185,5 +184,44 @@ export class WarehouseReceiptService {
     }
 
     return 0;
+  }
+
+  totalCost() {
+    return this.warehouseReceiptModel.aggregate([
+      {
+        $match: {
+          status: 'SUCCESS',
+        },
+      },
+      {
+        $group: {
+          _id: '$status',
+          amount: {
+            $sum: '$totalAmount',
+          },
+        },
+      },
+    ]);
+  }
+
+  costByMonths() {
+    return this.warehouseReceiptModel.aggregate([
+      {
+        $match: {
+          status: 'SUCCESS',
+        },
+      },
+      {
+        $group: {
+          _id: {
+            $month: '$createdAt',
+          },
+          month: { $first: { $month: '$createdAt' } },
+          amount: {
+            $sum: '$totalAmount',
+          },
+        },
+      },
+    ]);
   }
 }
