@@ -11,7 +11,7 @@ export class WarehouseReceipt {
   delivererName: string;
 
   @Prop({ type: Date })
-  deliveryDate: Date;
+  deliveryTime: Date;
 
   @Prop({
     type: String,

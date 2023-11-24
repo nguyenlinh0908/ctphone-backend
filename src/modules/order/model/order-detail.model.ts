@@ -20,6 +20,9 @@ export class OrderDetail {
 
   @Prop({ type: Number })
   amount: number;
+
+  @Prop({ type: Number })
+  amountUnit: number;
 }
 
 export const OrderDetailSchema = SchemaFactory.createForClass(OrderDetail);

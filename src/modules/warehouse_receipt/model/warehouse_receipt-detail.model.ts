@@ -16,6 +16,9 @@ export class WarehouseReceiptDetail {
 
   @Prop({ type: Number })
   amount: number;
+
+  @Prop({ type: Number })
+  amountUnit: number;
 }
 
 export const WarehouseReceiptDetailSchema = SchemaFactory.createForClass(

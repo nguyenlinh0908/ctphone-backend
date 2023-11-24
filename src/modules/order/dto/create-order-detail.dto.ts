@@ -5,5 +5,5 @@ export class CreateOrderDetailDto {
 
   quantity: number;
 
-  amount: string;
+  amount: number;
 }

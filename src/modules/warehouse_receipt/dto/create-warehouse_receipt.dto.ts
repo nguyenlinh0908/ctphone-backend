@@ -7,7 +7,7 @@ export class CreateWarehouseReceiptDto {
 
   delivererName: string;
 
-  deliveryDate: Date;
+  deliveryTime: Date;
 
   products: CreateWarehouseReceiptDetail[];
 }

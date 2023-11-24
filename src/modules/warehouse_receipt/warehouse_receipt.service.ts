@@ -57,6 +57,7 @@ export class WarehouseReceiptService {
               ...product,
               productId: new ObjectId(product.productId),
               warehouseReceiptId: new ObjectId(warehouseReceiptCreated._id),
+              amountUnit: product.amount / product.quantity,
             },
           },
         });
@@ -214,9 +215,9 @@ export class WarehouseReceiptService {
       {
         $group: {
           _id: {
-            $month: '$createdAt',
+            $month: '$deliveryTime',
           },
-          month: { $first: { $month: '$createdAt' } },
+          month: { $first: { $month: '$deliveryTime' } },
           amount: {
             $sum: '$totalAmount',
           },

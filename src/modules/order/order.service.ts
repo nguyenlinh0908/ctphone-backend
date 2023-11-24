@@ -39,7 +39,7 @@ export class OrderService {
     private orderDetailModel: Model<OrderDetailDocument>,
     private warehouseReceiptService: WarehouseReceiptService,
     private i18nService: I18nService,
-    private productService:ProductService
+    private productService: ProductService,
   ) {}
 
   createOrder(createOrderDto: CreateOrderDto) {
@@ -55,7 +55,12 @@ export class OrderService {
     createOrderDetailDto: CreateOrderDetailDto[],
   ) {
     const orderDetail = _.map(createOrderDetailDto, (item) => {
-      return { ...item, orderId, productId: new ObjectId(item.productId) };
+      return {
+        ...item,
+        orderId,
+        productId: new ObjectId(item.productId),
+        amountUnit: item.amount / item.quantity,
+      };
     });
     return this.orderDetailModel.create(orderDetail);
   }
@@ -76,20 +81,99 @@ export class OrderService {
       .exec();
   }
 
-  findOneOrderDetail(filter: FilterOrderDetailDto): Promise<OrderDetail> {
-    return this.orderDetailModel
-      .findOne(filter)
-      .populate('orderId', '', Order.name)
-      .populate('productId', '', Product.name)
-      .exec();
+  async findOneOrderDetail(filter: FilterOrderDetailDto): Promise<OrderDetail> {
+    const [result] = await this.orderDetailModel.aggregate([
+      {
+        $match: filter,
+      },
+      {
+        $lookup: {
+          from: 'products',
+          localField: 'productId',
+          foreignField: '_id',
+          as: 'productId',
+          pipeline: [
+            {
+              $lookup: {
+                localField: '_id',
+                foreignField: 'ownerId',
+                from: 'media',
+                as: 'media',
+              },
+            },
+          ],
+        },
+      },
+      {
+        $lookup: {
+          from: 'orders',
+          localField: 'orderId',
+          foreignField: '_id',
+          as: 'orderId',
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          productId: {
+            $first: '$productId',
+          },
+          orderId: {
+            $first: '$orderId',
+          },
+          amount: 1,
+          quantity: 1,
+        },
+      },
+    ]);
+    return result;
   }
 
   findOrderDetail(filter: FilterOrderDetailDto): Promise<OrderDetail[]> {
-    return this.orderDetailModel
-      .find(filter)
-      .populate('orderId', '', Order.name)
-      .populate('productId', '', Product.name)
-      .exec();
+    return this.orderDetailModel.aggregate([
+      {
+        $match: filter,
+      },
+      {
+        $lookup: {
+          from: 'products',
+          localField: 'productId',
+          foreignField: '_id',
+          as: 'productId',
+          pipeline: [
+            {
+              $lookup: {
+                localField: '_id',
+                foreignField: 'ownerId',
+                from: 'media',
+                as: 'media',
+              },
+            },
+          ],
+        },
+      },
+      {
+        $lookup: {
+          from: 'orders',
+          localField: 'orderId',
+          foreignField: '_id',
+          as: 'orderId',
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          productId: {
+            $first: '$productId',
+          },
+          orderId: {
+            $first: '$orderId',
+          },
+          amount: 1,
+          quantity: 1,
+        },
+      },
+    ]);
   }
 
   findOneAndUpdateUpsertOrderDetail(
@@ -124,7 +208,9 @@ export class OrderService {
           orderId: cart._id,
           productId: new ObjectId(updateCartDto.productId),
         });
-        const productChecking = await this.productService.findById(updateCartDto.productId)
+        const productChecking = await this.productService.findById(
+          updateCartDto.productId,
+        );
         const checkingQuantity = checkingOrderDetail
           ? ++checkingOrderDetail.quantity
           : 1;

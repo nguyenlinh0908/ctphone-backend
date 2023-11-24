@@ -43,7 +43,7 @@ export class WarehouseReceiptController {
 
     return this.warehouseReceiptService.create({
       ...createWarehouseReceiptDto,
-      deliveryDate: new Date(createWarehouseReceiptDto.deliveryDate),
+      deliveryTime: new Date(createWarehouseReceiptDto.deliveryTime),
     });
   }
 

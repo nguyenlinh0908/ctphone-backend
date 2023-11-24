@@ -250,7 +250,7 @@ export class OrderController {
     let productIds: Types.ObjectId[] = [];
     if (updatedOrder.status == OrderStatus.PREPARES_PACKAGE) {
       bulkWrite = orderDetails.map((i) => {
-        const productId = new ObjectId(i.productId);
+        const productId = new ObjectId(i.productId._id);
         productIds.push(productId);
         return {
           updateOne: {
