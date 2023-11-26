@@ -18,6 +18,7 @@ import { StaffModule } from './modules/staff/staff.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { WarehouseReceiptModule } from './modules/warehouse_receipt/warehouse_receipt.module';
 import { EventModule } from './modules/event/event.module';
+import { DeliveryAddressModule } from './modules/order/delivery_address/delivery_address.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { EventModule } from './modules/event/event.module';
     UploadModule,
     NotificationModule,
     EventModule,
+    DeliveryAddressModule
   ],
   controllers: [AppController],
   providers: [
