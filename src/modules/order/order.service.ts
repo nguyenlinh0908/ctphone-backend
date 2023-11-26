@@ -303,7 +303,7 @@ export class OrderService {
     return this.orderModel.aggregate([
       {
         $match: {
-          status: 'SUCCESS',
+          status: OrderStatus.SUCCESS,
         },
       },
       {
@@ -319,6 +319,9 @@ export class OrderService {
 
   revenueByMonths() {
     return this.orderModel.aggregate([
+      {
+        $match: { status: OrderStatus.SUCCESS },
+      },
       {
         $group: {
           _id: {
