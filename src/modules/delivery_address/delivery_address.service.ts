@@ -17,7 +17,7 @@ export class DeliveryAddressService {
   }
 
   find(filter: FilterDeliveryAddress) {
-    return this.deliveryAddressModel.find(filter);
+    return this.deliveryAddressModel.find(filter).sort("-isDefault");
   }
 
   findOne(filter: FilterDeliveryAddress) {
@@ -27,13 +27,18 @@ export class DeliveryAddressService {
   findByAccountId(accountId: Types.ObjectId) {
     return this.deliveryAddressModel.find({
       accountId: new ObjectId(accountId),
-    });
+    }).sort("-isDefault");;
   }
 
-  updateOne(id: Types.ObjectId, data: UpdateDeliveryAddressDto) {
-    console.log('id :>> ', id);
-    console.log('data :>> ', data);
+  updateOneById(id: Types.ObjectId, data: UpdateDeliveryAddressDto) {
     return this.deliveryAddressModel.findByIdAndUpdate(id, data, { new: true });
+  }
+
+  updateDefaultToNormal(accountId: Types.ObjectId) {
+    return this.deliveryAddressModel.updateMany(
+      { accountId: accountId, isDefault: true },
+      { $set: { isDefault: false } },
+    );
   }
 
   delete(id: string) {
