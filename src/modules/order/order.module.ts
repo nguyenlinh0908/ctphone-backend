@@ -5,6 +5,7 @@ import { WarehouseReceiptModule } from '../warehouse_receipt/warehouse_receipt.m
 import { Order, OrderDetail, OrderDetailSchema, OrderSchema } from './model';
 import { OrderController } from './order.controller';
 import { OrderService } from './order.service';
+import { DeliveryAddressModule } from '../delivery_address/delivery_address.module';
 
 @Module({
   imports: [
@@ -13,7 +14,8 @@ import { OrderService } from './order.service';
       { name: OrderDetail.name, schema: OrderDetailSchema },
     ]),
     ProductModule,
-    WarehouseReceiptModule
+    WarehouseReceiptModule,
+    DeliveryAddressModule
   ],
   controllers: [OrderController],
   providers: [OrderService],

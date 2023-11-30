@@ -83,6 +83,14 @@ export class DeliveryAddressController {
     return this.deliveryAddressService.findByAccountId(currentUser._id);
   }
 
+  @Get('/default/address')
+  defaultDeliveryAddress(@CurrentUser() currentUser: IJwtPayload) {
+    return this.deliveryAddressService.findOne({
+      accountId: new ObjectId(currentUser._id),
+      isDefault: true,
+    });
+  }
+
   @Get('/location/p')
   async provinces() {
     const data = await firstValueFrom(

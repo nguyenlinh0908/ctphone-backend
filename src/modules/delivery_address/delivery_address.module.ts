@@ -10,10 +10,10 @@ import { HttpModule } from '@nestjs/axios';
     MongooseModule.forFeature([
       { name: DeliveryAddress.name, schema: DeliveryAddressSchema },
     ]),
-    HttpModule
+    HttpModule,
   ],
   controllers: [DeliveryAddressController],
   providers: [DeliveryAddressService],
-  exports: [],
+  exports: [DeliveryAddressService],
 })
 export class DeliveryAddressModule {}

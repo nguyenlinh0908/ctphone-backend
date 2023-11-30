@@ -32,6 +32,7 @@ import { OrderStatus, PaymentStatus } from './enum';
 import { OrderService } from './order.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OrderEventDto } from '../event/dto';
+import { DeliveryAddressService } from '../delivery_address/delivery_address.service';
 
 @UseInterceptors(ResTransformInterceptor)
 @Controller('order')
@@ -40,6 +41,7 @@ export class OrderController {
     private readonly orderService: OrderService,
     private readonly productService: ProductService,
     private readonly i18nService: I18nService,
+    private readonly deliveryAddressService: DeliveryAddressService,
     private eventEmitter: EventEmitter2,
   ) {}
 
@@ -138,10 +140,21 @@ export class OrderController {
   @Roles(RoleType.CUSTOMER)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Patch(':id/checkout')
-  async updateOrder(@Param('id') id: Types.ObjectId) {
+  async updateOrder(
+    @Param('id') id: Types.ObjectId,
+    @CurrentUser() currentUser: IJwtPayload,
+  ) {
     const order = await this.orderService.findOneBy({ _id: id });
-
+    const deliveryAddress = await this.deliveryAddressService.findOne({
+      accountId: new ObjectId(currentUser._id),
+      isDefault: true,
+    });
     if (!order)
+      throw new HttpException(
+        this.i18nService.t('order.ERROR.ORDER_NOT_FOUND'),
+        HttpStatus.BAD_REQUEST,
+      );
+    if (!deliveryAddress)
       throw new HttpException(
         this.i18nService.t('order.ERROR.ORDER_NOT_FOUND'),
         HttpStatus.BAD_REQUEST,
@@ -154,6 +167,7 @@ export class OrderController {
 
     return this.orderService.findOneByIdAndUpdateOrder(id, {
       status: OrderStatus.PENDING,
+      deliveryAddress,
     });
   }
 
@@ -216,7 +230,7 @@ export class OrderController {
     const orderDetails = await this.orderService.findOrderDetail({
       orderId: new ObjectId(orderId),
     });
-    
+
     if (updateOrderStatusDto.status == OrderStatus.PREPARES_PACKAGE) {
       let isProductValid = true;
       for (const order of orderDetails) {

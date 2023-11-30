@@ -3,6 +3,7 @@ import { OrderStatus, PaymentStatus } from '../enum';
 import { Document, Types } from 'mongoose';
 import { Account } from 'src/modules/auth/model';
 import { AccountType } from 'src/modules/auth/enum';
+import { DeliveryAddress } from 'src/modules/delivery_address/model';
 
 export type OrderDocument = Order & Document;
 
@@ -36,6 +37,9 @@ export class Order {
 
   @Prop({ type: String, default: PaymentStatus.PENDING })
   paymentStatus: PaymentStatus;
+
+  @Prop({ type: DeliveryAddress, required: false })
+  deliveryAddress?: DeliveryAddress;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);
