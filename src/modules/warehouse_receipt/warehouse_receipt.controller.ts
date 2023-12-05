@@ -81,7 +81,7 @@ export class WarehouseReceiptController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.warehouseReceiptService.findOne(+id);
+    return this.warehouseReceiptService.findOne(id);
   }
 
   @Roles(RoleType.ADMIN, RoleType.STAFF)

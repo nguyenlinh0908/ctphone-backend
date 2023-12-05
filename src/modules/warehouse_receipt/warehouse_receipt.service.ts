@@ -80,8 +80,34 @@ export class WarehouseReceiptService {
       .populate('productId', '', Product.name);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} warehouseReceipt`;
+  async findOne(id: string) {
+    const [result] = await this.warehouseReceiptModel.aggregate([
+      {
+        $match: { _id: new ObjectId(id) },
+      },
+      {
+        $lookup: {
+          from: 'warehouseReceiptDetails',
+          localField: '_id',
+          foreignField: 'warehouseReceiptId',
+          as: 'details',
+          pipeline: [
+            {
+              $lookup: {
+                from: 'products',
+                localField: 'productId',
+                foreignField: '_id',
+                as: 'product',
+              },
+            },
+            {
+              $unwind: '$product',
+            },
+          ],
+        },
+      },
+    ]);
+    return result;
   }
 
   findOneById(id: Types.ObjectId) {
@@ -92,11 +118,33 @@ export class WarehouseReceiptService {
     id: string,
     updateWarehouseReceiptDto: UpdateWarehouseReceiptDto,
   ) {
+    let bulkWriteWarehouseReceiptDetails = [];
+    let totalQuantity = 0;
+    let totalAmount = 0;
+
+    for (const product of updateWarehouseReceiptDto.products) {
+      totalQuantity += product.quantity;
+      totalAmount += product.amount;
+
+      bulkWriteWarehouseReceiptDetails.push({
+        insertOne: {
+          document: {
+            ...product,
+            productId: new ObjectId(product.productId),
+            warehouseReceiptId: new ObjectId(id),
+            amountUnit: product.amount / product.quantity,
+          },
+        },
+      });
+    }
+
     const warehouseReceiptUpdated =
-      await this.warehouseReceiptModel.findByIdAndUpdate(
-        id,
-        updateWarehouseReceiptDto,
-      );
+      await this.warehouseReceiptModel.findByIdAndUpdate(id, {
+        ...updateWarehouseReceiptDto,
+        totalQuantity,
+        totalAmount,
+      });
+
     if (!warehouseReceiptUpdated)
       throw new HttpException('update faild', HttpStatus.BAD_REQUEST);
 
@@ -106,21 +154,14 @@ export class WarehouseReceiptService {
     )
       return warehouseReceiptUpdated;
 
-    let bulkWriteWarehouseReceiptDetails = [];
-    for (const product of updateWarehouseReceiptDto.products) {
-      bulkWriteWarehouseReceiptDetails.push({
-        updateOne: {
-          filter: { productId: product.productId },
-          update: {
-            $set: { ...product, warehouseId: warehouseReceiptUpdated._id },
-          },
-        },
-      });
-    }
+    await this.warehouseReceiptDetailModel.deleteMany({
+      warehouseReceiptId: new ObjectId(id),
+    });
 
     this.warehouseReceiptDetailModel.bulkWrite(
       bulkWriteWarehouseReceiptDetails,
     );
+    return warehouseReceiptUpdated;
   }
 
   async findByIdAndUpdateStatus(
