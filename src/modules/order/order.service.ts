@@ -289,9 +289,10 @@ export class OrderService {
       .sort([['createdAt', -1]]);
   }
 
-  findPurchaseHistory(ownerId: Types.ObjectId) {
+  findPurchaseHistory(filter: FilterOrderDto) {
+    console.log('filter :>> ', filter);
     return this.orderModel
-      .find({ ownerId, status: { $ne: OrderStatus.CART } })
+      .find(filter)
       .sort({ createdAt: -1 });
   }
 
@@ -334,5 +335,9 @@ export class OrderService {
         },
       },
     ]);
+  }
+
+  find(filter: FilterOrderDto) {
+    return this.orderModel.find(filter);
   }
 }

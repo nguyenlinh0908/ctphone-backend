@@ -10,5 +10,5 @@ export class FilterOrderDto {
 
   status?: OrderStatus;
 
-  code?: string;
+  code?: any;
 }

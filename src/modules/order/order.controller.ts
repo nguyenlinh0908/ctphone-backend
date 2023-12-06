@@ -33,6 +33,7 @@ import { OrderService } from './order.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OrderEventDto } from '../event/dto';
 import { DeliveryAddressService } from '../delivery_address/delivery_address.service';
+import { FilterPipe } from './pipes';
 
 @UseInterceptors(ResTransformInterceptor)
 @Controller('order')
@@ -174,8 +175,12 @@ export class OrderController {
   @Roles(RoleType.CUSTOMER)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('purchase_history')
-  myOrders(@CurrentUser() currentUser: IJwtPayload) {
-    return this.orderService.findPurchaseHistory(new ObjectId(currentUser._id));
+  myOrders(
+    @Query(new FilterPipe()) filter: FilterOrderDto,
+    @CurrentUser() currentUser: IJwtPayload,
+  ) {
+    filter.ownerId = new ObjectId(currentUser._id);
+    return this.orderService.findPurchaseHistory(filter);
   }
 
   @Roles(RoleType.ADMIN)
@@ -183,6 +188,19 @@ export class OrderController {
   @Get('all')
   allOrders() {
     return this.orderService.findAllExceptCart();
+  }
+
+  @Roles(RoleType.CUSTOMER, RoleType.STAFF, RoleType.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get()
+  orders(
+    @Query(new FilterPipe()) filter: FilterOrderDto,
+    @CurrentUser() currentUser: IJwtPayload,
+  ) {
+    if (currentUser.roles.includes(RoleType.CUSTOMER)) {
+      filter.ownerId = new ObjectId(currentUser._id);
+    }
+    return this.orderService.find(filter);
   }
 
   @Roles(RoleType.ADMIN)
