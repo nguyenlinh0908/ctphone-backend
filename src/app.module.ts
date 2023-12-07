@@ -30,7 +30,7 @@ import { DeliveryAddressModule } from './modules/delivery_address/delivery_addre
     dbModule,
     /**I18n */
     I18nModule.forRoot({
-      fallbackLanguage: 'en',
+      fallbackLanguage: 'vi',
       loaderOptions: {
         path: join(__dirname, '/i18n/'),
         watch: true,
