@@ -171,6 +171,7 @@ export class OrderService {
           },
           amount: 1,
           quantity: 1,
+          amountUnit: 1
         },
       },
     ]);
@@ -231,6 +232,7 @@ export class OrderService {
             productId: new ObjectId(updateCartDto.productId),
             orderId: cart._id,
             $inc: { quantity: 1, amount: product.price },
+            amountUnit: product.price
           },
         );
         await this.updateOneOrder(
@@ -290,10 +292,7 @@ export class OrderService {
   }
 
   findPurchaseHistory(filter: FilterOrderDto) {
-    console.log('filter :>> ', filter);
-    return this.orderModel
-      .find(filter)
-      .sort({ createdAt: -1 });
+    return this.orderModel.find(filter).sort({ createdAt: -1 });
   }
 
   countDocuments(filter: FilterOrderDto) {
@@ -338,6 +337,6 @@ export class OrderService {
   }
 
   find(filter: FilterOrderDto) {
-    return this.orderModel.find(filter);
+    return this.orderModel.find(filter).sort('-createdAt');
   }
 }
