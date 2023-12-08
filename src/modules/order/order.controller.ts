@@ -11,6 +11,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as _ from 'lodash';
 import { ObjectId } from 'mongodb';
 import { Types } from 'mongoose';
@@ -21,18 +22,18 @@ import { CurrentUser, Roles } from '../auth/decorator';
 import { AccountType, RoleType } from '../auth/enum';
 import { JwtAuthGuard, RolesGuard } from '../auth/guard';
 import { IJwtPayload } from '../auth/interface';
+import { DeliveryAddressService } from '../delivery_address/delivery_address.service';
+import { OrderEventDto } from '../event/dto';
 import { ProductService } from '../product/product.service';
 import {
   CreateOrderDto,
   FilterOrderDto,
+  UpdateCancelOrderDto,
   UpdateCartDto,
   UpdateOrderStatusDto,
 } from './dto';
 import { OrderStatus, PaymentStatus } from './enum';
 import { OrderService } from './order.service';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { OrderEventDto } from '../event/dto';
-import { DeliveryAddressService } from '../delivery_address/delivery_address.service';
 import { FilterPipe } from './pipes';
 
 @UseInterceptors(ResTransformInterceptor)
@@ -329,12 +330,13 @@ export class OrderController {
     });
   }
 
-  @Roles(RoleType.CUSTOMER)
+  @Roles(RoleType.CUSTOMER, RoleType.ADMIN, RoleType.STAFF)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Patch(':orderId/cancel')
   async cancel(
     @Param('orderId') orderId: Types.ObjectId,
     @CurrentUser() currentUser: IJwtPayload,
+    @Body() data: UpdateCancelOrderDto,
   ) {
     const order = await this.orderService.findOneBy({
       _id: new ObjectId(orderId),
@@ -345,7 +347,15 @@ export class OrderController {
         HttpStatus.BAD_REQUEST,
       );
 
-    if (order.ownerId != currentUser._id)
+    if ( order.status != OrderStatus.SUCCESS && order.ownerId != currentUser._id)
+      throw new HttpException(
+        this.i18nService.t('order.DONT_PERMISSION_ORDER'),
+        HttpStatus.BAD_REQUEST,
+      );
+    if (
+      order.status == OrderStatus.SUCCESS &&
+      currentUser.roles.includes(RoleType.CUSTOMER)
+    )
       throw new HttpException(
         this.i18nService.t('order.DONT_PERMISSION_ORDER'),
         HttpStatus.BAD_REQUEST,
@@ -353,6 +363,7 @@ export class OrderController {
 
     return this.orderService.findOneByIdAndUpdateOrder(new ObjectId(orderId), {
       status: OrderStatus.CANCEL,
+      note: data.note,
     });
   }
 
