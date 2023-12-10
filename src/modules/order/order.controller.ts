@@ -35,16 +35,20 @@ import {
 import { OrderStatus, PaymentStatus } from './enum';
 import { OrderService } from './order.service';
 import { FilterPipe } from './pipes';
+import { CachingService } from 'src/libs/caching/src';
+import { Order } from './model';
 
 @UseInterceptors(ResTransformInterceptor)
 @Controller('order')
 export class OrderController {
+  private readonly LIMIT_TIME_ALLOW_ROLLBACK_ORDER_STATUS = 15 * 60 * 1000;
   constructor(
     private readonly orderService: OrderService,
     private readonly productService: ProductService,
     private readonly i18nService: I18nService,
     private readonly deliveryAddressService: DeliveryAddressService,
     private eventEmitter: EventEmitter2,
+    private cachingService: CachingService,
   ) {}
 
   @Roles(RoleType.CUSTOMER)
@@ -229,17 +233,19 @@ export class OrderController {
       order.status,
     );
 
-    if (orderStatusIdx >= updateOrderStatusDtoIdx)
+    /* preventive for case rollback status*/
+    if (orderStatusIdx - updateOrderStatusDtoIdx > 1)
       throw new HttpException(
         this.i18nService.t('order.ERROR.ORDER_BELOW_LEVEL'),
         HttpStatus.BAD_REQUEST,
       );
 
-    if (updateOrderStatusDtoIdx - orderStatusIdx != 1)
+    if (updateOrderStatusDtoIdx == -1)
       throw new HttpException(
         this.i18nService.t('order.ERROR.ORDER_STATUS_INVALID'),
         HttpStatus.BAD_REQUEST,
       );
+    /* end preventive for case rollback status*/
 
     // auto set payment status success when order status success
     if (updateOrderStatusDto.status == OrderStatus.SUCCESS)
@@ -267,18 +273,33 @@ export class OrderController {
           HttpStatus.BAD_REQUEST,
         );
     }
-
+    let updateData: any = {
+      status: updateOrderStatusDto.status,
+      merchandiserId: currentUser._id,
+      paymentStatus:
+        updateOrderStatusDto.paymentStatus && OrderStatus.SUCCESS
+          ? updateOrderStatusDto.paymentStatus
+          : order.paymentStatus,
+    };
+    //case rollback previous status
+    if (orderStatusIdx - updateOrderStatusDtoIdx == 1) {
+      const previousOrder: Order = await this.cachingService.get(
+        `order-${orderId}`,
+      );
+      updateData = { ...previousOrder };
+    }
     const updatedOrder = await this.orderService.findOneByIdAndUpdateOrder(
       orderId,
-      {
-        status: updateOrderStatusDto.status,
-        merchandiserId: currentUser._id,
-        paymentStatus:
-          updateOrderStatusDto.paymentStatus && OrderStatus.SUCCESS
-            ? updateOrderStatusDto.paymentStatus
-            : order.paymentStatus,
-      },
+      updateData,
     );
+
+    // caching order before update
+    this.cachingService.set(
+      `order-${order._id}`,
+      order,
+      this.LIMIT_TIME_ALLOW_ROLLBACK_ORDER_STATUS,
+    );
+
     let bulkWrite = [];
     let productIds: Types.ObjectId[] = [];
     if (updatedOrder.status == OrderStatus.PREPARES_PACKAGE) {
@@ -347,7 +368,7 @@ export class OrderController {
         HttpStatus.BAD_REQUEST,
       );
 
-    if ( order.status != OrderStatus.SUCCESS && order.ownerId != currentUser._id)
+    if (order.status != OrderStatus.SUCCESS && order.ownerId != currentUser._id)
       throw new HttpException(
         this.i18nService.t('order.DONT_PERMISSION_ORDER'),
         HttpStatus.BAD_REQUEST,
