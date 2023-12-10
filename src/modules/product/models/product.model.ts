@@ -38,6 +38,9 @@ export class Product {
   @Prop({ type: Number, required: true })
   price: number;
 
+  @Prop({ type: Number, required: false })
+  startingPrice?: number;
+
   @Prop({ type: Types.ObjectId })
   categoryId: Types.ObjectId;
 

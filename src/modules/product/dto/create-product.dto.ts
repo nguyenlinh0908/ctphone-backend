@@ -13,8 +13,6 @@ export class CreateProductDto {
   @IsString()
   name: string;
 
-  @IsEmpty()
-  @IsString()
   @IsOptional()
   description?: string;
 
@@ -50,6 +48,9 @@ export class CreateProductDto {
   @IsNotEmpty()
   price: number;
 
+  @IsOptional()
+  startingPrice?: number
+  
   @IsMongoId()
   @IsNotEmpty()
   categoryId: Types.ObjectId;
