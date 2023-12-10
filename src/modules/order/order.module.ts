@@ -6,6 +6,7 @@ import { Order, OrderDetail, OrderDetailSchema, OrderSchema } from './model';
 import { OrderController } from './order.controller';
 import { OrderService } from './order.service';
 import { DeliveryAddressModule } from '../delivery_address/delivery_address.module';
+import { CachingModule } from 'src/libs/caching/src';
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { DeliveryAddressModule } from '../delivery_address/delivery_address.modu
     ]),
     ProductModule,
     WarehouseReceiptModule,
-    DeliveryAddressModule
+    DeliveryAddressModule,
+    CachingModule
   ],
   controllers: [OrderController],
   providers: [OrderService],
