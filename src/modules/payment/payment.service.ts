@@ -8,6 +8,7 @@ import * as crypto from 'crypto';
 import { Request } from 'express';
 import { OrderService } from '../order/order.service';
 import { OrderStatus, PaymentStatus } from '../order/enum';
+import { DeliveryAddressService } from '../delivery_address/delivery_address.service';
 
 @Injectable()
 export class PaymentService {
@@ -16,6 +17,7 @@ export class PaymentService {
   constructor(
     private readonly i18nService: I18nService,
     private orderService: OrderService,
+    private deliverAddressService: DeliveryAddressService,
   ) {}
 
   createPayment(createVnpayPaymentDto: CreateVnpayPaymentDto) {
@@ -95,9 +97,18 @@ export class PaymentService {
       };
 
     if (rspCode == '00') {
+      const deliveryAddressDefault = await this.deliverAddressService.findOne({
+        accountId: order.ownerId,
+        isDefault: true,
+      });
+
       await this.orderService.updateOneOrder(
         { _id: order._id },
-        { paymentStatus: PaymentStatus.SUCCESS, status: OrderStatus.PENDING },
+        {
+          paymentStatus: PaymentStatus.SUCCESS,
+          status: OrderStatus.PENDING,
+          deliveryAddress: deliveryAddressDefault,
+        },
       );
       return { RspCode: '00', Message: 'Success' };
     } else {
