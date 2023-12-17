@@ -101,7 +101,6 @@ export class PaymentService {
         accountId: order.ownerId,
         isDefault: true,
       });
-
       await this.orderService.updateOneOrder(
         { _id: order._id },
         {

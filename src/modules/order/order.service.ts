@@ -5,6 +5,7 @@ import { ObjectId } from 'mongodb';
 import { Model, Types } from 'mongoose';
 import { Product } from '../product/models';
 import {
+  CreateOfflineOrderDto,
   CreateOrderDetailDto,
   CreateOrderDto,
   FilterOrderDetailDto,
@@ -44,6 +45,21 @@ export class OrderService {
 
   createOrder(createOrderDto: CreateOrderDto) {
     return this.orderModel.create(createOrderDto);
+  }
+
+  async createOfflineOrder(createOfflineOrderDto: CreateOfflineOrderDto) {
+    const order = await this.orderModel.create(createOfflineOrderDto);
+    let orderDetailData: CreateOrderDetailDto[];
+    _.map(createOfflineOrderDto.products, (item) => {
+      const orderDetailItem: CreateOrderDetailDto = {
+        productId: item.productId,
+        amount: item.amount,
+        quantity: item.quantity,
+      };
+      return orderDetailItem;
+    });
+    const x = await this.orderDetailModel.insertMany(orderDetailData);
+    return order;
   }
 
   updateOneOrder(filter: FilterOrderDto, data: any) {
@@ -171,7 +187,7 @@ export class OrderService {
           },
           amount: 1,
           quantity: 1,
-          amountUnit: 1
+          amountUnit: 1,
         },
       },
     ]);
@@ -232,7 +248,7 @@ export class OrderService {
             productId: new ObjectId(updateCartDto.productId),
             orderId: cart._id,
             $inc: { quantity: 1, amount: product.price },
-            amountUnit: product.price
+            amountUnit: product.price,
           },
         );
         await this.updateOneOrder(
@@ -292,7 +308,9 @@ export class OrderService {
   }
 
   findPurchaseHistory(filter: FilterOrderDto) {
-    return this.orderModel.find(filter).sort({ createdAt: -1 });
+    return this.orderModel
+      .find({ $and: [filter, { status: { $ne: OrderStatus.CART } }] })
+      .sort({ createdAt: -1 });
   }
 
   countDocuments(filter: FilterOrderDto) {
@@ -337,6 +355,6 @@ export class OrderService {
   }
 
   find(filter: FilterOrderDto) {
-    return this.orderModel.find(filter).sort('-createdAt');
+    return this.orderModel.find({$and:[filter, {status:{$ne: OrderStatus.CART}}]}).sort('-createdAt');
   }
 }

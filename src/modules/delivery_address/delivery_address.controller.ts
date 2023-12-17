@@ -23,7 +23,7 @@ import { firstValueFrom } from 'rxjs';
 import { IDistrict, IProvince } from './interface';
 
 @UseInterceptors(ResTransformInterceptor)
-@Roles(RoleType.CUSTOMER)
+@Roles(RoleType.CUSTOMER, RoleType.ADMIN, RoleType.STAFF)
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('delivery-address')
 export class DeliveryAddressController {
