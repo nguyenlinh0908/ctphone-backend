@@ -26,6 +26,7 @@ import { DeliveryAddressService } from '../delivery_address/delivery_address.ser
 import { OrderEventDto } from '../event/dto';
 import { ProductService } from '../product/product.service';
 import {
+  CreateOfflineOrderDto,
   CreateOrderDto,
   FilterOrderDto,
   UpdateCancelOrderDto,
@@ -426,5 +427,11 @@ export class OrderController {
   @Get('statistical/revenue/months')
   async revenueByMonths() {
     return this.orderService.revenueByMonths();
+  }
+
+  @Roles(RoleType.ADMIN, RoleType.STAFF)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  createOfflineOrder(@Body() createOrderDto: CreateOfflineOrderDto) {
+    return this.orderService.createOfflineOrder(createOrderDto)
   }
 }

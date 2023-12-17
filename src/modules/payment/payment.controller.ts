@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { I18nService } from 'nestjs-i18n';
 import { ResTransformInterceptor } from 'src/shared/interceptor';
-import { OrderStatus } from '../order/enum';
+import { OrderStatus, PaymentStatus } from '../order/enum';
 import { OrderService } from '../order/order.service';
 import { CreateVnpayPaymentInput } from './dto';
 import { PaymentService } from './payment.service';
@@ -45,7 +45,11 @@ export class PaymentController {
         this.i18nService.t('order.ERROR.ORDER_STATUS_INVALID'),
         HttpStatus.BAD_REQUEST,
       );
-
+    const updateOrder = await this.orderService.updateOneOrder(
+      { _id: createVnpayPaymentInput.orderId },
+      { status: OrderStatus.PENDING, paymentStatus: PaymentStatus.SUCCESS },
+    );
+    console.log('updateOrder :>> ', updateOrder);
     return {
       url: this.paymentService.createPayment({
         orderCode: order.code,
